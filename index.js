@@ -21,6 +21,16 @@ const init = async () => {
 
     server.route({
         method: 'GET',
+        path: '/node_modules/{param*}',
+        handler: {
+            directory: {
+                path: 'node_modules'
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/api',
         handler: (request, h) => {
             return 'Hello api!';

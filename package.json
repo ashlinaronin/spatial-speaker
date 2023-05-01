@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
-    "@hapi/inert": "^7.1.0"
+    "@hapi/inert": "^7.1.0",
+    "tone": "^14.7.77"
   }
 }

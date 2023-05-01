@@ -4,5 +4,32 @@
     </head>
     <body>
         <h1>spatial speaker</h1>
+        <h2 id="clock"></h2>
+        <button id="start">start</button>
+        <script src="./node_modules/tone/build/Tone.js"></script>
+        <script type="module">
+            const clockElement = document.getElementById("clock");
+            const startButtonElement = document.getElementById("start");
+
+            const updateClockDisplay = (newTime) => {
+                clockElement.innerText = newTime;
+            }
+
+            const interval = setInterval(() => {
+                const now = performance.timeOrigin + performance.now();
+                updateClockDisplay(now);
+            }, 10);
+
+            //attach a click listener to a play button
+            startButtonElement.addEventListener('click', async () => {
+                await Tone.start();
+                console.log('audio is ready');
+            })
+
+            const player = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").toDestination();
+            Tone.loaded().then(() => {
+                player.start();
+            });
+        </script>
     </body>
 </html>
