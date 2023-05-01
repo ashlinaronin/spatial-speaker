@@ -1,0 +1,15 @@
+{
+  "name": "spatial-speaker",
+  "version": "1.0.0",
+  "description": "server-client system to synchronize playback of sounds across multiple phone speakers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2"
+  }
+}
