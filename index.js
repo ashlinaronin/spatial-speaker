@@ -7,12 +7,23 @@ const init = async () => {
         host: 'localhost'
     });
 
+    await server.register(require('@hapi/inert'));
+
     server.route({
         method: 'GET',
-        path: '/',
-        handler: (request, h) => {
+        path: '/{param*}',
+        handler: {
+            directory: {
+                path: 'client'
+            }
+        }
+    });
 
-            return 'Hello World!';
+    server.route({
+        method: 'GET',
+        path: '/api',
+        handler: (request, h) => {
+            return 'Hello api!';
         }
     });
 
