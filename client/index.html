@@ -6,8 +6,34 @@
         <h1>spatial speaker</h1>
         <h2 id="clock"></h2>
         <button id="start">start</button>
+        <!-- <button id="stop">stop</button> -->
         <script src="./node_modules/tone/build/Tone.js"></script>
+        <script src="/lib/gotime-master/GoTime.js"></script>
         <script type="module">
+            GoTime.setOptions({
+                AjaxURL: "/time",
+                WhenSynced: updateSyncData, // Is called for the first sync
+                OnSync: updateSyncData,// Calls on ever sync starting with the second sync
+                SyncInitialTimeouts: [500, 3000, 9000, 15000],
+                SyncInterval: 20000 // Set this often for demo purposes only
+            });
+
+            function updateSyncData(t, method, off, precision){
+                // var l = new Date();
+                // var s = new GoTime();
+                // $('#local').text(l.getTime());
+                // $('#server').text(s.getTime());
+
+                // $('#offset').text(GoTime.getOffset());
+                // $('#precision').text(GoTime.getPrecision());
+
+                // appendHistory(t, method, off, precision)
+
+                console.log(GoTime.getHistory())
+            }
+
+
+
             const clockElement = document.getElementById("clock");
             const startButtonElement = document.getElementById("start");
 
@@ -15,20 +41,40 @@
                 clockElement.innerText = newTime;
             }
 
+            const getNow = () => performance.timeOrigin + performance.now();
+
             const interval = setInterval(() => {
-                const now = performance.timeOrigin + performance.now();
-                updateClockDisplay(now);
+                updateClockDisplay(getNow());
             }, 10);
 
-            //attach a click listener to a play button
+            // wire up start and stop buttons
             startButtonElement.addEventListener('click', async () => {
                 await Tone.start();
-                console.log('audio is ready');
             })
 
+            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
             const player = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").toDestination();
-            Tone.loaded().then(() => {
-                player.start();
+            Tone.loaded().then(async() => {
+                await wait(5000); // wait 5 secs for GoTime to sync up clocks before scheduling anything
+                const totalNow = getNow();
+                const perfNow = performance.now();
+                const timeOrigin = performance.timeOrigin;
+                const audioNow = Tone.now();
+                console.log("timeOrigin", timeOrigin);
+                console.log("totalNow", totalNow);
+                console.log("perfNow", perfNow);
+                console.log("audioNow", audioNow);
+                console.log("audioNowMs", audioNow * 1000);
+
+                const gt = new GoTime();
+                const serverTime = gt.getTime();
+                const offset = GoTime.getOffset();
+                const timeToPlay = offset / 1000;
+                console.log("timeToPlay", timeToPlay);
+
+                debugger;
+                player.start(timeToPlay);
             });
         </script>
     </body>

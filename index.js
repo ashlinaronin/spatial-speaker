@@ -21,6 +21,16 @@ const init = async () => {
 
     server.route({
         method: 'GET',
+        path: '/lib/{param*}',
+        handler: {
+            directory: {
+                path: 'lib'
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/node_modules/{param*}',
         handler: {
             directory: {
@@ -31,10 +41,8 @@ const init = async () => {
 
     server.route({
         method: 'GET',
-        path: '/api',
-        handler: (request, h) => {
-            return 'Hello api!';
-        }
+        path: '/time',
+        handler: (request, h) => performance.timeOrigin + performance.now(),
     });
 
     await server.start();

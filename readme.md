@@ -1,5 +1,10 @@
 # spatial speaker
 
-- v1. just play a sound file synchronized on two devices
-- v2. pan
-- v3. accelerometer input from device
+- [ ] play a sound file on two devices
+- [ ] synchronize clocks w/ ajax
+- [ ] synchronize clocks w/ sockets
+- [ ] send a msg from controller over socket
+- [ ] pan sound depending on randomly position of device
+- [ ] allow controller to position devices
+- [ ] get accelerometer input from device
+- [ ] use accelerometer data to drive param changes
