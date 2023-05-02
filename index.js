@@ -3,6 +3,8 @@ const inert = require('@hapi/inert');
 const socketIo = require('socket.io');
 const { performance } = require('node:perf_hooks');
 
+const getServerTime = () => performance.timeOrigin + performance.now();
+
 const init = async () => {
 
     const server = Hapi.server({
@@ -47,7 +49,7 @@ const init = async () => {
     server.route({
         method: 'GET',
         path: '/time',
-        handler: (request, h) => performance.timeOrigin + performance.now(),
+        handler: (request, h) => getServerTime(),
     });
 
     io.on("connection", (socket) => {
@@ -58,7 +60,7 @@ const init = async () => {
       
         socket.on("gong", () => {
           console.log("received gong msg, emitting");
-          io.emit("gong");
+          io.emit("gong", { serverTime: getServerTime() });
         });
       });
 

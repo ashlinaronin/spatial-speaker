@@ -26,7 +26,6 @@
             }
 
 
-
             const clockElement = document.getElementById("clock");
             const startButtonElement = document.getElementById("start");
 
@@ -48,38 +47,22 @@
             const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
             const player = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").toDestination();
+            var sine = new Tone.Oscillator(440, "sine").toDestination();
+
             Tone.loaded().then(async() => {
                 await wait(5000); // wait 5 secs for GoTime to sync up clocks before scheduling anything
 
-                socket.on("gong", () => {
+                socket.on("gong", ({ serverTime }) => {
                     console.log("received gong event");
 
-                    const gt = new GoTime();
-                    const serverTime = gt.getTime();
-                    const offset = GoTime.getOffset();
-                    const timeToPlay = (1000 - offset) / 1000;
+                    const offsetSeconds = GoTime.getOffset() / 1000;
+                    const toneNow = Tone.now();
+                    const timeToPlay = Tone.now() + 0.25 + offsetSeconds;
                     console.log("timeToPlay", timeToPlay);
-                    player.start(timeToPlay);
+
+                    sine.start(timeToPlay);
+                    sine.stop(timeToPlay + 0.25);
                 });
-
-                // const totalNow = getNow();
-                // const perfNow = performance.now();
-                // const timeOrigin = performance.timeOrigin;
-                // const audioNow = Tone.now();
-                // console.log("timeOrigin", timeOrigin);
-                // console.log("totalNow", totalNow);
-                // console.log("perfNow", perfNow);
-                // console.log("audioNow", audioNow);
-                // console.log("audioNowMs", audioNow * 1000);
-
-                // const gt = new GoTime();
-                // const serverTime = gt.getTime();
-                // const offset = GoTime.getOffset();
-                // const timeToPlay = offset / 1000;
-                // console.log("timeToPlay", timeToPlay);
-
-                // debugger;
-                // player.start(timeToPlay);
             });
         </script>
     </body>
