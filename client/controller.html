@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>spatial speaker: controller</title>
+    </head>
+    <body>
+        <h1>spatial speaker: controller</h1>
+        <button id="gong">gong</button>
+        <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
+        <script type="module">
+            const socket = io();
+
+            document.getElementById("gong").addEventListener('click', async () => {
+                socket.emit("gong");
+            });
+        </script>
+    </body>
+</html>

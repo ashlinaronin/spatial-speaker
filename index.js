@@ -1,4 +1,7 @@
 const Hapi = require('@hapi/hapi');
+const inert = require('@hapi/inert');
+const socketIo = require('socket.io');
+const { performance } = require('node:perf_hooks');
 
 const init = async () => {
 
@@ -7,7 +10,9 @@ const init = async () => {
         host: 'localhost'
     });
 
-    await server.register(require('@hapi/inert'));
+    const io = socketIo(server.listener);
+
+    await server.register(inert);
 
     server.route({
         method: 'GET',
@@ -44,6 +49,18 @@ const init = async () => {
         path: '/time',
         handler: (request, h) => performance.timeOrigin + performance.now(),
     });
+
+    io.on("connection", (socket) => {
+        console.log("a user connected");
+        socket.on("disconnect", () => {
+          console.log("user disconnected");
+        });
+      
+        socket.on("gong", () => {
+          console.log("received gong msg, emitting");
+          io.emit("gong");
+        });
+      });
 
     await server.start();
     console.log('Server running on %s', server.info.uri);
