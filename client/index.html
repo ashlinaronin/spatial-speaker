@@ -6,6 +6,18 @@
         <h1>spatial speaker</h1>
         <h2 id="clock"></h2>
         <button id="start">start</button>
+        Local:<br />
+        <h1 id="local"></h1>
+
+        Server:<br />
+        <h1 id="server"></h1>
+        <h1 id="syncs">Sync History</h1>
+        <table id="sync-table">
+        </table>
+
+        <h1>Stats</h1>
+        Offset:  <span id="offset"></span> with best precision: <span id="precision"></span>
+
         <!-- <button id="stop">stop</button> -->
         <script src="./node_modules/tone/build/Tone.js"></script>
         <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
@@ -21,8 +33,43 @@
                 SyncInterval: 20000 // Set this often for demo purposes only
             });
 
-            function updateSyncData(t, method, off, precision){
-                console.log(GoTime.getHistory())
+            // set up socket sync acknowledgement for GoTime
+            GoTime.wsSend(() => {
+                socket.emit("time", null, null, ({ serverTime }) => {
+                    GoTime.wsReceived(serverTime);
+                });
+                return true;
+            })
+
+            function appendHistory(t, method, offset, precision) {
+                const timestampCell = document.createElement("td");
+                const methodCell = document.createElement("td");
+                const offsetCell = document.createElement("td");
+                const precisionCell = document.createElement("td");
+
+                timestampCell.innerText = (new Date(t)).toLocaleTimeString();
+                methodCell.innerText = method;
+                offsetCell.innerText = `${offset}ms`;
+                precisionCell.innerText = `${precision}ms`;
+
+                const newRow = document.createElement("tr");
+                newRow.appendChild(timestampCell);
+                newRow.appendChild(methodCell);
+                newRow.appendChild(offsetCell);
+                newRow.appendChild(precisionCell);
+
+                document.getElementById("sync-table").appendChild(newRow);
+            }
+
+            function updateSyncData(t, method, off, precision) {
+                console.log(GoTime.getHistory());
+                var local = new Date();
+                var server = new GoTime();
+                document.getElementById("local").innerText = local.getTime();
+                document.getElementById("server").innerText = server.getTime();   
+                document.getElementById("offset").innerText = GoTime.getOffset();
+                document.getElementById("precision").innerText = GoTime.getPrecision();
+                appendHistory(t, method, off, precision);
             }
 
 

@@ -62,6 +62,11 @@ const init = async () => {
           console.log("received gong msg, emitting");
           io.emit("gong", { serverTime: getServerTime() });
         });
+
+        // set up socket sync acknowledgement for GoTime
+        socket.on("time", (arg1, arg2, callback) => {
+          callback({ serverTime: getServerTime() });
+        })
       });
 
     await server.start();
