@@ -1,10 +1,10 @@
 <html>
     <head>
         <title>spatial speaker</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>
     <body>
         <h1>spatial speaker</h1>
-        <h2 id="clock"></h2>
         <button id="start">start</button>
         Local:<br />
         <h1 id="local"></h1>
@@ -72,22 +72,10 @@
                 appendHistory(t, method, off, precision);
             }
 
-
-            const clockElement = document.getElementById("clock");
-            const startButtonElement = document.getElementById("start");
-
-            const updateClockDisplay = (newTime) => {
-                clockElement.innerText = newTime;
-            }
-
             const getNow = () => performance.timeOrigin + performance.now();
 
-            const interval = setInterval(() => {
-                updateClockDisplay(getNow());
-            }, 10);
-
             // wire up start and stop buttons
-            startButtonElement.addEventListener('click', async () => {
+            document.getElementById("start").addEventListener('click', async () => {
                 await Tone.start();
             })
 
@@ -104,7 +92,9 @@
 
                     const offsetSeconds = GoTime.getOffset() / 1000;
                     const toneNow = Tone.now();
-                    const timeToPlay = Tone.now() + 0.25 + offsetSeconds;
+
+                    // account for network offset twice: once in received message delay, once in clock offset
+                    const timeToPlay = Tone.now() + 0.25 - (offsetSeconds * 2);
                     console.log("timeToPlay", timeToPlay);
 
                     sine.start(timeToPlay);
