@@ -97,8 +97,7 @@
                     const timeToPlay = Tone.now() + 0.25 - (offsetSeconds * 2);
                     console.log("timeToPlay", timeToPlay);
 
-                    sine.start(timeToPlay);
-                    sine.stop(timeToPlay + 0.25);
+                    player.start(timeToPlay);
                 });
             });
         </script>
