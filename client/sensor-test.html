@@ -10,10 +10,16 @@
     <p id="status"></p>
     <a id="map-link" target="_blank"></a>
     <div id="orientation">
-        <h2>orientation</h2>
-        <p id="frontToBack">frontToBack: </p>
-        <p id="leftToRight">leftToRight: </p>
-        <p id="rotateDegrees">rotateDegrees: </p>
+      <h2>orientation</h2>
+      <p id="frontToBack">frontToBack:</p>
+      <p id="leftToRight">leftToRight:</p>
+      <p id="rotateDegrees">rotateDegrees:</p>
+    </div>
+    <div id="motion">
+      <h2>motion</h2>
+      <p id="x">x:</p>
+      <p id="y">y:</p>
+      <p id="z">z:</p>
     </div>
 
     <script src="./node_modules/tone/build/Tone.js"></script>
@@ -51,14 +57,35 @@
       }
       document.querySelector("#find-me").addEventListener("click", geoFindMe);
 
-
       const frontToBackEl = document.querySelector("#frontToBack");
       const leftToRightEl = document.querySelector("#leftToRight");
       const rotateDegreesEl = document.querySelector("#rotateDegrees");
+      const xEl = document.querySelector("#x");
+      const yEl = document.querySelector("#y");
+      const zEl = document.querySelector("#z");
 
-      // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
-      if (window.DeviceOrientationEvent) {
-        debugger;
+      const handleOrientationEvent = (
+        frontToBack,
+        leftToRight,
+        rotateDegrees
+      ) => {
+        frontToBackEl.textContent = `frontToBack: ${frontToBack}`;
+        leftToRightEl.textContent = `leftToRight: ${leftToRight}`;
+        rotateDegreesEl.textContent = `rotateDegrees: ${rotateDegrees}`;
+
+      };
+
+      const handleMotionEvent = (event) => {
+        const x = event.accelerationIncludingGravity.x;
+        const y = event.accelerationIncludingGravity.y;
+        const z = event.accelerationIncludingGravity.z;
+        xEl.textContent = `x: ${x}`;
+        yEl.textContent = `y: ${y}`;
+        zEl.textContent = `z: ${z}`;
+      };
+
+      const setupDeviceOrientation = () => {
+        // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
         window.addEventListener(
           "deviceorientation",
           (event) => {
@@ -70,22 +97,32 @@
           },
           true
         );
-      } else {
-        debugger;
-        console.error("DeviceOrientationEvent not supported");
-      }
-
-      const handleOrientationEvent = (
-        frontToBack,
-        leftToRight,
-        rotateDegrees
-      ) => {
-
-        frontToBackEl.textContent = frontToBack;
-        leftToRightEl.textContent = leftToRight
-        rotateDegreesEl.textContent = rotateDegrees;
-        console.log(`frontToBack: ${frontToBack}, leftToRight: ${leftToRight}, rotateDegrees: ${rotateDegrees}`);
       };
+
+      const setupDeviceMotion = () => {
+        window.addEventListener("devicemotion", handleMotionEvent, true);
+      };
+
+      const initializeSensorApis = async() => {
+        // todo handle error case
+        if ("DeviceMotionEvent" in window) {
+            const permissionResponse = await DeviceMotionEvent.requestPermission();
+            if (permissionResponse === "granted") {
+                setupDeviceMotion();
+            }
+        }
+
+        if ("DeviceOrientationEvent" in window) {
+            const permissionResponse = await DeviceOrientationEvent.requestPermission();
+            if (permissionResponse === "granted") {
+                setupDeviceOrientation();
+            }
+        }
+      };
+
+      document
+        .querySelector("#start")
+        .addEventListener("click", initializeSensorApis, true);
     </script>
   </body>
 </html>
