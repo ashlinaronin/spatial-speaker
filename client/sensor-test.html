@@ -1,3 +1,4 @@
+<!-- meant to pair with ircam-server.js -->
 <html>
   <head>
     <title>spatial speaker: sensor test</title>
@@ -36,6 +37,19 @@
       const status = document.querySelector("#status");
       const mapLink = document.querySelector("#map-link");
 
+      // generate id to send with movement
+      // note: this id will be new every time the page refreshes, it is not persistent
+      const clientId = self.crypto.randomUUID();
+
+      const latestMovement = {
+        clientId,
+      };
+
+      const sendLatestMovement = () => {
+        // todo send timestamp as well
+        socket.emit("movement", latestMovement);
+      };
+
       // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
       function geoFindMe() {
         mapLink.href = "";
@@ -48,6 +62,9 @@
           status.textContent = "";
           mapLink.href = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
           mapLink.textContent = `Latitude: ${latitude}°, Longitude: ${longitude}°`;
+
+          latestMovement.latitude = latitude;
+          latestMovement.longitude = longitude;
         }
 
         function error(err) {
@@ -66,14 +83,20 @@
         }
       }
 
-      const handleOrientationEvent = (
-        frontToBack,
-        leftToRight,
-        rotateDegrees
-      ) => {
+      const handleOrientationEvent = (alpha, beta, gamma) => {
+        const rotateDegrees = alpha; // alpha: rotation around z-axis
+        const frontToBack = beta; // beta: front back motion
+        const leftToRight = gamma; // gamma: left to right
+
         frontToBackEl.textContent = `frontToBack: ${frontToBack}`;
         leftToRightEl.textContent = `leftToRight: ${leftToRight}`;
         rotateDegreesEl.textContent = `rotateDegrees: ${rotateDegrees}`;
+
+        latestMovement.orientationAlpha = alpha;
+        latestMovement.orientationBeta = beta;
+        latestMovement.orientationGamma = gamma;
+
+        // sendLatestMovement();
       };
 
       const handleMotionEvent = (event) => {
@@ -83,6 +106,12 @@
         xEl.textContent = `x: ${x}`;
         yEl.textContent = `y: ${y}`;
         zEl.textContent = `z: ${z}`;
+
+        latestMovement.motionX = x;
+        latestMovement.motionY = y;
+        latestMovement.motionZ = z;
+
+        // sendLatestMovement();
       };
 
       const setupDeviceOrientation = () => {
@@ -90,11 +119,11 @@
         window.addEventListener(
           "deviceorientation",
           (event) => {
-            const rotateDegrees = event.alpha; // alpha: rotation around z-axis
-            const leftToRight = event.gamma; // gamma: left to right
-            const frontToBack = event.beta; // beta: front back motion
+            // const rotateDegrees = event.alpha; // alpha: rotation around z-axis
+            // const leftToRight = event.gamma; // gamma: left to right
+            // const frontToBack = event.beta; // beta: front back motion
 
-            handleOrientationEvent(frontToBack, leftToRight, rotateDegrees);
+            handleOrientationEvent(event.alpha, event.beta, event.gamma);
           },
           true
         );
@@ -107,22 +136,37 @@
       const initializeSensorApis = async () => {
         // todo handle error case
         if ("DeviceMotionEvent" in window) {
-          const permissionResponse =
-            await DeviceMotionEvent.requestPermission();
-          if (permissionResponse === "granted") {
+          if (typeof DeviceMotionEvent.requestPermission !== "function") {
+            // try to initialize without requesting permission
             setupDeviceMotion();
+          } else {
+            // ask nicely
+            const permissionResponse =
+              await DeviceMotionEvent?.requestPermission();
+            if (permissionResponse === "granted") {
+              setupDeviceMotion();
+            }
           }
         }
 
         if ("DeviceOrientationEvent" in window) {
-          const permissionResponse =
-            await DeviceOrientationEvent.requestPermission();
-          if (permissionResponse === "granted") {
+          if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+            // try to initialize without requesting permission
             setupDeviceOrientation();
+          } else {
+            // ask nicely
+            const permissionResponse =
+              await DeviceOrientationEvent.requestPermission();
+            if (permissionResponse === "granted") {
+              setupDeviceOrientation();
+            }
           }
         }
 
         geoFindMe();
+
+        // start sending latest movement via socket to server
+        const interval = setInterval(sendLatestMovement, 1000);
       };
 
       // when the start button is clicked, initialize all the sensors
