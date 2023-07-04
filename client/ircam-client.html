@@ -4,50 +4,40 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>
     <body>
-        <h1>spatial speaker</h1>
+        <h1>spatial speaker: ircam client</h1>
         <button id="start">start</button>
 
-
         <script src="./node_modules/tone/build/Tone.js"></script>
-        <!-- <script src="./node_modules/@ircam/sync"></script> -->
         <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
         <script type="module">
-            import SyncClient from "./lib/ircam-client-converted.js";
-            const socket = io();
+            import { socket, syncClient } from "./lib/sync-socket.js";
 
-            // return the local time in seconds
-            const getTimeFunction = () => performance.now() / 1000;
+             // wire up start button
+             document.getElementById("start").addEventListener('click', async () => {
+                await Tone.start();
+            })
 
-            // init sync client
-            const syncClient = new SyncClient(getTimeFunction);
+            const player = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").toDestination();
+            var sine = new Tone.Oscillator(440, "sine").toDestination();
 
-            socket.on("connect", () => {
-                const sendFunction = (pingId, clientPingTime) => {
-                    socket.emit("ircam", { isPing: true, pingId, clientPingTime });
-                };
+            Tone.loaded().then(async() => {
 
-                const receiveFunction = callback => {
-                    socket.on("ircam", ({ isPing, pingId, clientPingTime, serverPingTime, serverPongTime }) => {
-                        if (!isPing) {
-                            callback(pingId, clientPingTime, serverPingTime, serverPongTime);
-                        }
-                    });
-                };
+                socket.on("gong", ({ serverTime }) => {
+                    console.log("received gong event");
 
-                // check the synchronization status, when this function is called for the 
-                // first time, you can consider the synchronization process properly 
-                // initiated.
-                const statusFunction = status => console.log(status);
-                // start synchronization process
-                syncClient.start(sendFunction, receiveFunction, statusFunction);
+                    const localTime = syncClient.getLocalTime();
+
+                    const syncTime = syncClient.getSyncTime();
+                    const timeToPlay = syncClient.getLocalTime(serverTime);
+
+                    console.log("serverTime from event", serverTime);
+                    console.log("localTime", localTime);
+                    console.log("syncTime", syncTime);
+                    console.log("timeToPlay", timeToPlay);
+                    
+                    player.start(timeToPlay);
+                });
             });
-    
-
-            // monitor the synchronized clock
-            setInterval(() => {
-                const syncTime = syncClient.getSyncTime();
-                console.log(syncTime);
-            }, 100);
 
         </script>
     </body>
