@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <title>spatial speaker: sensor test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1>spatial speaker: sensor test</h1>
+    <button id="start">start</button>
+    <button id="find-me">Show my location</button><br />
+    <p id="status"></p>
+    <a id="map-link" target="_blank"></a>
+    <div id="orientation">
+        <h2>orientation</h2>
+        <p id="frontToBack">frontToBack: </p>
+        <p id="leftToRight">leftToRight: </p>
+        <p id="rotateDegrees">rotateDegrees: </p>
+    </div>
+
+    <script src="./node_modules/tone/build/Tone.js"></script>
+    <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
+    <script type="module">
+      import { socket, syncClient } from "./lib/sync-socket.js";
+
+      // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
+      function geoFindMe() {
+        const status = document.querySelector("#status");
+        const mapLink = document.querySelector("#map-link");
+
+        mapLink.href = "";
+        mapLink.textContent = "";
+
+        function success(position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          status.textContent = "";
+          mapLink.href = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
+          mapLink.textContent = `Latitude: ${latitude}°, Longitude: ${longitude}°`;
+        }
+
+        function error(err) {
+          status.textContent = JSON.stringify(err, null, 2);
+        }
+
+        if (!navigator.geolocation) {
+          status.textContent = "Geolocation is not supported by your browser";
+        } else {
+          status.textContent = "Locating…";
+          navigator.geolocation.watchPosition(success, error);
+        }
+      }
+      document.querySelector("#find-me").addEventListener("click", geoFindMe);
+
+
+      const frontToBackEl = document.querySelector("#frontToBack");
+      const leftToRightEl = document.querySelector("#leftToRight");
+      const rotateDegreesEl = document.querySelector("#rotateDegrees");
+
+      // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
+      if (window.DeviceOrientationEvent) {
+        debugger;
+        window.addEventListener(
+          "deviceorientation",
+          (event) => {
+            const rotateDegrees = event.alpha; // alpha: rotation around z-axis
+            const leftToRight = event.gamma; // gamma: left to right
+            const frontToBack = event.beta; // beta: front back motion
+
+            handleOrientationEvent(frontToBack, leftToRight, rotateDegrees);
+          },
+          true
+        );
+      } else {
+        debugger;
+        console.error("DeviceOrientationEvent not supported");
+      }
+
+      const handleOrientationEvent = (
+        frontToBack,
+        leftToRight,
+        rotateDegrees
+      ) => {
+
+        frontToBackEl.textContent = frontToBack;
+        leftToRightEl.textContent = leftToRight
+        rotateDegreesEl.textContent = rotateDegrees;
+        console.log(`frontToBack: ${frontToBack}, leftToRight: ${leftToRight}, rotateDegrees: ${rotateDegrees}`);
+      };
+    </script>
+  </body>
+</html>
