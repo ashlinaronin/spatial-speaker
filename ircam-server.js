@@ -58,6 +58,7 @@ const init = async () => {
         // the transport layer between the SyncServer and the SyncClient
         const receiveFunction = callback => {
             socket.on("ircam", ({ isPing, pingId, clientPingTime }) => {
+                console.log("received ircam", pingId, clientPingTime);
                 if (isPing) {
                     callback(pingId, clientPingTime);
                 }
@@ -65,6 +66,8 @@ const init = async () => {
         };
 
         const sendFunction = (pingId, clientPingTime, serverPingTime, serverPongTime) => {
+            console.log("sending ircam", pingId, clientPingTime, serverPingTime, serverPongTime);
+
             socket.emit("ircam", {
                 isPing: false,
                 pingId,
@@ -75,6 +78,11 @@ const init = async () => {
         };
 
         syncServer.start(sendFunction, receiveFunction);
+
+        socket.on("gong", () => {
+            console.log("received gong msg, emitting");
+            io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
+          });
     });
 
     await server.start();
