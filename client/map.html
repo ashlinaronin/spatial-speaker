@@ -30,7 +30,7 @@
   <body>
     <h1>spatial speaker: map</h1>
     <div id="map"></div>
-
+    <script src="./node_modules/tone/build/Tone.js"></script>
     <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
@@ -42,24 +42,28 @@
       }).addTo(map);
       map.locate({ setView: true, maxZoom: 16 });
 
-      function onLocationFound(e) {
-        var radius = e.accuracy;
-
-        L.marker(e.latlng)
-          .addTo(map)
-          .bindPopup("You are within " + radius + " meters from this point")
-          .openPopup();
-
-        L.circle(e.latlng, radius).addTo(map);
-      }
-
-      map.on("locationfound", onLocationFound);
-
       function onLocationError(e) {
         alert(e.message);
       }
 
       map.on("locationerror", onLocationError);
+
+      let markers = L.layerGroup();
+      map.addLayer(markers);
+
+      socket.on("movementEvents", (movementEvents) => {
+        debugger;
+        console.log("movementEvents on client", movementEvents);
+
+        // clear out all older markers to make space for the new
+        markers.clearLayers();
+        Object.entries(movementEvents).map(([clientId, events]) => {
+          events.forEach((event) => {
+            const marker = L.marker([event.latitude, event.longitude]);
+            markers.addLayer(marker);
+          });
+        });
+      });
     </script>
   </body>
 </html>

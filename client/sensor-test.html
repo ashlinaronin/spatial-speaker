@@ -65,6 +65,10 @@
 
           latestMovement.latitude = latitude;
           latestMovement.longitude = longitude;
+
+
+          // try only sending latest movement on geo change
+          sendLatestMovement();
         }
 
         function error(err) {
@@ -162,7 +166,7 @@
         geoFindMe();
 
         // start sending latest movement via socket to server
-        const interval = setInterval(sendLatestMovement, 1000);
+        // const interval = setInterval(sendLatestMovement, 1000);
       };
 
       // when the start button is clicked, initialize all the sensors
