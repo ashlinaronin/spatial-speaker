@@ -17,9 +17,7 @@
   <body>
     <div id="container"></div>
 
-    <div id="info">
-      <a href="https://threejs.org" target="_blank">three.js</a> - fat lines
-    </div>
+    <div id="info">visualizing motion vectors</div>
 
     <!-- Import maps polyfill -->
     <!-- Remove this when import maps will be widely supported -->
@@ -36,7 +34,7 @@
         }
       }
     </script>
-	<script src="./node_modules/tone/build/Tone.js"></script>
+    <script src="./node_modules/tone/build/Tone.js"></script>
     <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
     <script type="module">
       import * as THREE from "three";
@@ -47,8 +45,10 @@
 
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-      let line, renderer, scene, camera, controls;
+      let renderer, scene, camera, controls;
       let stats, gpuPanel;
+
+      let lines = [];
 
       init();
       animate();
@@ -58,7 +58,7 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 0.0);
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.useLegacyLights = false;
+        // renderer.useLegacyLights = false;
         document.body.appendChild(renderer.domElement);
 
         scene = new THREE.Scene();
@@ -75,28 +75,44 @@
         controls.minDistance = 10;
         controls.maxDistance = 500;
 
-        // Position and THREE.Color Data
-        const points = [];
-		const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-       
-		socket.on("movementEvents", (movementEvents) => {
+
+
+        socket.on("movementEvents", (movementEvents) => {
           console.log("movementEvents on client", movementEvents);
 
+          // remove old line
+          // scene.remove(line);
+          lines.forEach(line => {
+            scene.remove(line);
+            line.geometry.dispose();
+          });
+
+          lines = [];
+
           Object.entries(movementEvents).map(([clientId, events]) => {
+            // this is a very hacky deterministic way to get a hex code from a guid
+            const hexFromGuid = `#${clientId.substring(0, 6)}`;
+            const material = new THREE.LineBasicMaterial({
+              color: hexFromGuid,
+            });
+
+            const points = [];
             events.forEach((event) => {
               points.push(
                 new THREE.Vector3(event.motionX, event.motionY, event.motionZ)
               );
             });
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+    
+            lines.push(line);
+
+            debugger;
+            scene.add(line);
           });
 
           // todo split by user
-
-          const geometry = new THREE.BufferGeometry().setFromPoints(points);
-          line = new THREE.Line(geometry, material);
-          line.computeLineDistances();
-          line.scale.set(1, 1, 1);
-		  scene.add(line);
         });
 
         //
@@ -121,18 +137,11 @@
 
       function animate() {
         requestAnimationFrame(animate);
-
         stats.update();
-
-        renderer.setClearColor(0x000000, 0);
-
-        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-
         gpuPanel.startQuery();
         renderer.render(scene, camera);
         gpuPanel.endQuery();
       }
-
     </script>
   </body>
 </html>

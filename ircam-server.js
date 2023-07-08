@@ -122,7 +122,10 @@ const init = async () => {
 
       console.log("movementEvents", movementEvents);
 
-      // send all movementEvents back out into the ether
+      // send just this movementEvent back out into the ether
+      //   io.emit("movementEvents", { [clientId]: [movementEvent] });
+
+      // send all movement events
       io.emit("movementEvents", movementEvents);
     });
   });
