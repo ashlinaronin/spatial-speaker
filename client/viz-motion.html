@@ -80,13 +80,11 @@
         socket.on("movementEvents", (movementEvents) => {
           console.log("movementEvents on client", movementEvents);
 
-          // remove old line
-          // scene.remove(line);
+          // remove old lines
           lines.forEach(line => {
             scene.remove(line);
             line.geometry.dispose();
           });
-
           lines = [];
 
           Object.entries(movementEvents).map(([clientId, events]) => {
@@ -107,12 +105,8 @@
             const line = new THREE.Line(geometry, material);
     
             lines.push(line);
-
-            debugger;
             scene.add(line);
           });
-
-          // todo split by user
         });
 
         //
