@@ -50,6 +50,8 @@
         socket.emit("movement", latestMovement);
       };
 
+      const getUtcTimestamp = () => (new Date()).getTime();
+
       // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
       function geoFindMe() {
         mapLink.href = "";
@@ -65,6 +67,8 @@
 
           latestMovement.latitude = latitude;
           latestMovement.longitude = longitude;
+
+          latestMovement.timestamp = getUtcTimestamp();
 
 
           // try only sending latest movement on geo change
@@ -99,12 +103,20 @@
         latestMovement.orientationAlpha = alpha;
         latestMovement.orientationBeta = beta;
         latestMovement.orientationGamma = gamma;
+
+        latestMovement.timestamp = getUtcTimestamp();
       };
 
       const handleMotionEvent = (event) => {
-        const x = event.accelerationIncludingGravity.x;
-        const y = event.accelerationIncludingGravity.y;
-        const z = event.accelerationIncludingGravity.z;
+        // const x = event.accelerationIncludingGravity.x;
+        // const y = event.accelerationIncludingGravity.y;
+        // const z = event.accelerationIncludingGravity.z;
+
+        const x = event.acceleration.x;
+        const y = event.acceleration.y;
+        const z = event.acceleration.z;
+        
+
         xEl.textContent = `x: ${x}`;
         yEl.textContent = `y: ${y}`;
         zEl.textContent = `z: ${z}`;
@@ -112,6 +124,8 @@
         latestMovement.motionX = x;
         latestMovement.motionY = y;
         latestMovement.motionZ = z;
+
+        latestMovement.timestamp = getUtcTimestamp();
       };
 
       const setupDeviceOrientation = () => {
