@@ -77,14 +77,14 @@
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
 
-      Highcharts.chart("container", {
+      const chart = Highcharts.chart("container", {
         title: {
           text: "accelerometer xyz",
           align: "left",
         },
 
         subtitle: {
-          text: 'just one device at a time for testing',
+          text: "just one device at a time for testing",
           align: "left",
         },
 
@@ -108,34 +108,22 @@
 
         plotOptions: {
           series: {
-            label: {
-              connectorAllowed: false,
-            },
-            pointStart: 2010,
+            pointStart: 0,
           },
         },
 
         series: [
           {
             name: "acceleration x",
-            data: [
-              43934, 48656, 65165, 81827, 112143, 142383, 171533, 165174,
-              155157, 161454, 154610,
-            ],
+            data: [],
           },
           {
             name: "acceleration y",
-            data: [
-              24916, 37941, 29742, 29851, 32490, 30282, 38121, 36885, 33726,
-              34243, 31050,
-            ],
+            data: [],
           },
           {
             name: "acceleration z",
-            data: [
-              11744, 30000, 16005, 19771, 20185, 24377, 32147, 30912, 29243,
-              29213, 25663,
-            ],
+            data: [],
           },
         ],
 
@@ -157,41 +145,29 @@
         },
       });
 
-      let lines = [];
+      socket.on("movementEvents", (movementEvents) => {
+        const eventsForFirstClientId = Object.values(movementEvents)[0];
 
-      function init() {
-        socket.on("movementEvents", (movementEvents) => {
-          console.log("movementEvents on client", movementEvents);
-
-          // remove old lines
-          lines.forEach((line) => {
-            scene.remove(line);
-            line.geometry.dispose();
-          });
-          lines = [];
-
-          Object.entries(movementEvents).map(([clientId, events]) => {
-            // this is a very hacky deterministic way to get a hex code from a guid
-            const hexFromGuid = `#${clientId.substring(0, 6)}`;
-            const material = new THREE.LineBasicMaterial({
-              color: hexFromGuid,
-            });
-
-            const points = [];
-            events.forEach((event) => {
-              points.push(
-                new THREE.Vector3(event.motionX, event.motionY, event.motionZ)
-              );
-            });
-
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, material);
-
-            lines.push(line);
-            scene.add(line);
-          });
+        const xData = [];
+        const yData = [];
+        const zData = [];
+        eventsForFirstClientId.forEach((event) => {
+          xData.push(event.motionX);
+          yData.push(event.motionY);
+          zData.push(event.motionZ);
         });
-      }
+
+        const firstEventTimestamp = eventsForFirstClientId[0].timestamp;
+
+        chart.update({
+          plotOptions: { series: { pointStart: firstEventTimestamp } },
+        });
+
+        // this only works bc of the indices... not super robusto, fine for prototype
+        chart.series[0].setData(xData);
+        chart.series[1].setData(yData);
+        chart.series[2].setData(zData);
+      });
     </script>
   </body>
 </html>

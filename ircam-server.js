@@ -97,7 +97,7 @@ const init = async () => {
     });
 
     socket.on("movement", (movementEvent) => {
-      console.log("received movement event from phone", movementEvent);
+    //   console.log("received movement event from phone", movementEvent);
       const {
         clientId,
         timestamp,
@@ -115,15 +115,12 @@ const init = async () => {
       // append to map sorted by timestamp, so latest is always at the end
 
       // if we don't have any events for this client yet, initialize an array of them
-      if (!movementEvents[clientId]) {
+      // also if we have more than 1000 events already, clear it out since we just want a temporary
+      // but speedy buffer
+      if (!movementEvents[clientId] || movementEvents[clientId].length > 1000) {
         movementEvents[clientId] = [];
       }
       movementEvents[clientId].push(movementEvent);
-
-      console.log("movementEvents", movementEvents);
-
-      // send just this movementEvent back out into the ether
-      //   io.emit("movementEvents", { [clientId]: [movementEvent] });
 
       // send all movement events
       io.emit("movementEvents", movementEvents);

@@ -69,10 +69,6 @@
           latestMovement.longitude = longitude;
 
           latestMovement.timestamp = getUtcTimestamp();
-
-
-          // try only sending latest movement on geo change
-          sendLatestMovement();
         }
 
         function error(err) {
@@ -108,10 +104,6 @@
       };
 
       const handleMotionEvent = (event) => {
-        // const x = event.accelerationIncludingGravity.x;
-        // const y = event.accelerationIncludingGravity.y;
-        // const z = event.accelerationIncludingGravity.z;
-
         const x = event.acceleration.x;
         const y = event.acceleration.y;
         const z = event.acceleration.z;
@@ -180,7 +172,7 @@
         geoFindMe();
 
         // start sending latest movement via socket to server
-        // const interval = setInterval(sendLatestMovement, 1000);
+        const interval = setInterval(sendLatestMovement, 20);
       };
 
       // when the start button is clicked, initialize all the sensors
