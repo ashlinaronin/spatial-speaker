@@ -11,6 +11,8 @@ const getTimeFunction = () => {
 
 const movementEvents = {};
 
+const ACC_THRESHOLD = 3.0;
+
 //
 const syncServer = new SyncServer(getTimeFunction);
 
@@ -124,6 +126,11 @@ const init = async () => {
 
       // send all movement events
       io.emit("movementEvents", movementEvents);
+
+      if (motionX > ACC_THRESHOLD || motionY > ACC_THRESHOLD || motionZ > ACC_THRESHOLD) {
+        console.log("acc over threshold, sending gong");
+        io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
+      }
     });
   });
 

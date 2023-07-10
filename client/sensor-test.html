@@ -50,7 +50,7 @@
         socket.emit("movement", latestMovement);
       };
 
-      const getUtcTimestamp = () => (new Date()).getTime();
+      const getUtcTimestamp = () => new Date().getTime();
 
       // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
       function geoFindMe() {
@@ -107,7 +107,6 @@
         const x = event.acceleration.x;
         const y = event.acceleration.y;
         const z = event.acceleration.z;
-        
 
         xEl.textContent = `x: ${x}`;
         yEl.textContent = `y: ${y}`;
@@ -117,7 +116,9 @@
         latestMovement.motionY = y;
         latestMovement.motionZ = z;
 
-        latestMovement.timestamp = getUtcTimestamp();
+        const timestamp = getUtcTimestamp();
+
+        latestMovement.timestamp = timestamp;
       };
 
       const setupDeviceOrientation = () => {
@@ -175,10 +176,39 @@
         const interval = setInterval(sendLatestMovement, 200);
       };
 
-      // when the start button is clicked, initialize all the sensors
-      document
-        .querySelector("#start")
-        .addEventListener("click", initializeSensorApis, true);
+      // when the start button is clicked, initialize all the sensors and start Tone
+      document.querySelector("#start").addEventListener(
+        "click",
+        async () => {
+          await initializeSensorApis();
+          await Tone.start();
+        },
+        true
+      );
+
+      // play a gong get it on
+      const player = new Tone.Player(
+        "https://tonejs.github.io/audio/berklee/gong_1.mp3"
+      ).toDestination();
+      var sine = new Tone.Oscillator(440, "sine").toDestination();
+
+      Tone.loaded().then(async () => {
+        socket.on("gong", ({ serverTime }) => {
+          console.log("received gong event");
+
+          const localTime = syncClient.getLocalTime();
+
+          const syncTime = syncClient.getSyncTime();
+          const timeToPlay = syncClient.getLocalTime(serverTime);
+
+          console.log("serverTime from event", serverTime);
+          console.log("localTime", localTime);
+          console.log("syncTime", syncTime);
+          console.log("timeToPlay", timeToPlay);
+
+          player.start(timeToPlay);
+        });
+      });
     </script>
   </body>
 </html>
