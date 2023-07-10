@@ -13,6 +13,10 @@ const movementEvents = {};
 
 const ACC_THRESHOLD = 5.0;
 const EVENT_BUFFER_LENGTH = 500;
+const REFRESH_RATE = 200;
+const BUFFER_CLEANUP_MS = EVENT_BUFFER_LENGTH * REFRESH_RATE;
+
+const getUtcTimestamp = () => new Date().getTime();
 
 //
 const syncServer = new SyncServer(getTimeFunction);
@@ -146,6 +150,21 @@ const init = async () => {
   await server.start();
   console.log("Server running on %s", server.info.uri);
 };
+
+const bufferCleanupInterval = setInterval(() => {
+  const now = getUtcTimestamp();
+
+  const clientIdsOlderThanCleanup = Object.entries(movementEvents)
+    .filter(([, events]) =>
+      events.filter((e) => now - e[e.length - 1]?.timestamp < BUFFER_CLEANUP_MS)
+    )
+    .map(([clientId]) => clientId);
+
+  clientIdsOlderThanCleanup.forEach((clientId) => {
+    movementEvents[clientId] = [];
+    delete movementEvents[clientId];
+  });
+}, BUFFER_CLEANUP_MS);
 
 process.on("unhandledRejection", (err) => {
   console.log(err);

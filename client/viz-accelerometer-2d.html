@@ -159,9 +159,9 @@
             return {
               series: [
                 ...accum.series,
-                { name: `${clientId} x`, data: xData },
-                { name: `${clientId} y`, data: yData },
-                { name: `${clientId} z`, data: zData },
+                { name: `${clientId} x`, data: xData, xAxis: 0 },
+                { name: `${clientId} y`, data: yData, xAxis: 0 },
+                { name: `${clientId} z`, data: zData, xAxis: 0 },
               ],
               plotLines: [
                 ...accum.plotLines,
@@ -181,6 +181,11 @@
             plotLines,
           },
         });
+
+        // remove stale series that are no longer in movementEvents
+        chart.series
+          .filter((s) => !series.includes((ss) => ss.name === s.name))
+          .forEach((ss) => ss.remove());
 
         series.forEach((serie, index) => {
           // if series doesn't yet exist, create it
