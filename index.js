@@ -11,7 +11,7 @@ const getTimeFunction = () => {
 
 const movementEvents = {};
 
-const ACC_THRESHOLD = 3.0;
+const ACC_THRESHOLD = 5.0;
 const EVENT_BUFFER_LENGTH = 500;
 
 //
@@ -100,7 +100,7 @@ const init = async () => {
     });
 
     socket.on("movement", (movementEvent) => {
-    //   console.log("received movement event from phone", movementEvent);
+      //   console.log("received movement event from phone", movementEvent);
       const {
         clientId,
         timestamp,
@@ -118,17 +118,25 @@ const init = async () => {
       // append to map sorted by timestamp, so latest is always at the end
 
       // if we don't have any events for this client yet, initialize an array of them
-      // also if we have more than EVENT_BUFFER_LENGTH events already, clear it out since we just want a temporary
-      // but speedy buffer
-      if (!movementEvents[clientId] || movementEvents[clientId].length > EVENT_BUFFER_LENGTH) {
+      if (!movementEvents[clientId]) {
         movementEvents[clientId] = [];
       }
+
+      // if buffer is full, take one off the beginning to add space
+      if (movementEvents[clientId].length > EVENT_BUFFER_LENGTH) {
+        movementEvents[clientId].shift();
+      }
+
       movementEvents[clientId].push(movementEvent);
 
       // send all movement events
       io.emit("movementEvents", movementEvents);
 
-      if (motionX > ACC_THRESHOLD || motionY > ACC_THRESHOLD || motionZ > ACC_THRESHOLD) {
+      if (
+        motionX > ACC_THRESHOLD ||
+        motionY > ACC_THRESHOLD ||
+        motionZ > ACC_THRESHOLD
+      ) {
         console.log("acc over threshold, sending gong");
         io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
       }

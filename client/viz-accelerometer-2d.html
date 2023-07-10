@@ -60,14 +60,14 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/modules/boost.js"></script>
 
     <script src="./node_modules/tone/build/Tone.js"></script>
     <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
 
-      const ACC_THRESHOLD = 3.0;
+      const ACC_THRESHOLD = 5.0;
 
       // display utc timestamps in browser local
       Highcharts.setOptions({
@@ -77,6 +77,7 @@
       });
 
       const chart = Highcharts.chart("container", {
+        boost: { enabled: true },
         title: {
           text: "accelerometer xyz",
           align: "left",
@@ -91,14 +92,21 @@
           title: {
             text: "m/s^2",
           },
+          max: 10,
+          min: -10,
         },
 
         xAxis: {
-          accessibility: {
-            rangeDescription: "Range: 2010 to 2020",
-          },
           labels: {
             format: "{value:%H:%M:%S.%L}",
+          },
+        },
+
+        plotOptions: {
+          line: {
+            marker: {
+              enabled: false,
+            },
           },
         },
 
@@ -144,9 +152,9 @@
       socket.on("movementEvents", (movementEvents) => {
         const eventsForFirstClientId = Object.values(movementEvents)[0];
 
-        const xData = [];
-        const yData = [];
-        const zData = [];
+        let xData = [];
+        let yData = [];
+        let zData = [];
         const timestampsOverThreshold = [];
         eventsForFirstClientId.forEach((event) => {
           xData.push([event.timestamp, event.motionX]);
@@ -165,7 +173,6 @@
         const firstEventTimestamp = eventsForFirstClientId[0].timestamp;
 
         chart.update({
-          // plotOptions: { series: { pointStart: firstEventTimestamp } },
           xAxis: {
             plotLines: timestampsOverThreshold.map((timestamp) => ({
               color: "red",
@@ -176,9 +183,9 @@
         });
 
         // this only works bc of the indices... not super robusto, fine for prototype
-        chart.series[0].setData(xData);
-        chart.series[1].setData(yData);
-        chart.series[2].setData(zData);
+        chart.series[0].setData(xData, true, false);
+        chart.series[1].setData(yData, true, false);
+        chart.series[2].setData(zData, true, false);
       });
     </script>
   </body>
