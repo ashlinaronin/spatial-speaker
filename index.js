@@ -12,6 +12,7 @@ const getTimeFunction = () => {
 const movementEvents = {};
 
 const ACC_THRESHOLD = 3.0;
+const EVENT_BUFFER_LENGTH = 500;
 
 //
 const syncServer = new SyncServer(getTimeFunction);
@@ -117,9 +118,9 @@ const init = async () => {
       // append to map sorted by timestamp, so latest is always at the end
 
       // if we don't have any events for this client yet, initialize an array of them
-      // also if we have more than 1000 events already, clear it out since we just want a temporary
+      // also if we have more than EVENT_BUFFER_LENGTH events already, clear it out since we just want a temporary
       // but speedy buffer
-      if (!movementEvents[clientId] || movementEvents[clientId].length > 1000) {
+      if (!movementEvents[clientId] || movementEvents[clientId].length > EVENT_BUFFER_LENGTH) {
         movementEvents[clientId] = [];
       }
       movementEvents[clientId].push(movementEvent);

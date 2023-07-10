@@ -69,6 +69,13 @@
 
       const ACC_THRESHOLD = 3.0;
 
+      // display utc timestamps in browser local
+      Highcharts.setOptions({
+        time: {
+          useUTC: false,
+        },
+      });
+
       const chart = Highcharts.chart("container", {
         title: {
           text: "accelerometer xyz",
@@ -90,18 +97,15 @@
           accessibility: {
             rangeDescription: "Range: 2010 to 2020",
           },
+          labels: {
+            format: "{value:%H:%M:%S.%L}",
+          },
         },
 
         legend: {
           layout: "vertical",
           align: "right",
           verticalAlign: "middle",
-        },
-
-        plotOptions: {
-          series: {
-            pointStart: 0,
-          },
         },
 
         series: [
@@ -145,9 +149,9 @@
         const zData = [];
         const timestampsOverThreshold = [];
         eventsForFirstClientId.forEach((event) => {
-          xData.push(event.motionX);
-          yData.push(event.motionY);
-          zData.push(event.motionZ);
+          xData.push([event.timestamp, event.motionX]);
+          yData.push([event.timestamp, event.motionY]);
+          zData.push([event.timestamp, event.motionZ]);
 
           if (
             event.motionX > ACC_THRESHOLD ||
@@ -161,7 +165,7 @@
         const firstEventTimestamp = eventsForFirstClientId[0].timestamp;
 
         chart.update({
-          plotOptions: { series: { pointStart: firstEventTimestamp } },
+          // plotOptions: { series: { pointStart: firstEventTimestamp } },
           xAxis: {
             plotLines: timestampsOverThreshold.map((timestamp) => ({
               color: "red",
