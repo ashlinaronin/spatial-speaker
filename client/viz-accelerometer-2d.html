@@ -55,7 +55,6 @@
 
   <body>
     <div id="container"></div>
-    <div id="info">visualizing acceleration in 2d</div>
 
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
@@ -84,7 +83,7 @@
         },
 
         subtitle: {
-          text: "just one device at a time for testing",
+          text: "all connected devices by id",
           align: "left",
         },
 
@@ -116,20 +115,7 @@
           verticalAlign: "middle",
         },
 
-        series: [
-          {
-            name: "acceleration x",
-            data: [],
-          },
-          {
-            name: "acceleration y",
-            data: [],
-          },
-          {
-            name: "acceleration z",
-            data: [],
-          },
-        ],
+        series: [],
 
         responsive: {
           rules: [
@@ -150,42 +136,63 @@
       });
 
       socket.on("movementEvents", (movementEvents) => {
-        const eventsForFirstClientId = Object.values(movementEvents)[0];
+        const { series, plotLines } = Object.entries(movementEvents).reduce(
+          (accum, [clientId, events]) => {
+            let xData = [];
+            let yData = [];
+            let zData = [];
+            const timestampsOverThreshold = [];
+            events.forEach((event) => {
+              xData.push([event.timestamp, event.motionX]);
+              yData.push([event.timestamp, event.motionY]);
+              zData.push([event.timestamp, event.motionZ]);
 
-        let xData = [];
-        let yData = [];
-        let zData = [];
-        const timestampsOverThreshold = [];
-        eventsForFirstClientId.forEach((event) => {
-          xData.push([event.timestamp, event.motionX]);
-          yData.push([event.timestamp, event.motionY]);
-          zData.push([event.timestamp, event.motionZ]);
+              if (
+                event.motionX > ACC_THRESHOLD ||
+                event.motionY > ACC_THRESHOLD ||
+                event.motionZ > ACC_THRESHOLD
+              ) {
+                timestampsOverThreshold.push(event.timestamp);
+              }
+            });
 
-          if (
-            event.motionX > ACC_THRESHOLD ||
-            event.motionY > ACC_THRESHOLD ||
-            event.motionZ > ACC_THRESHOLD
-          ) {
-            timestampsOverThreshold.push(event.timestamp);
-          }
-        });
-
-        const firstEventTimestamp = eventsForFirstClientId[0].timestamp;
+            return {
+              series: [
+                ...accum.series,
+                { name: `${clientId} x`, data: xData },
+                { name: `${clientId} y`, data: yData },
+                { name: `${clientId} z`, data: zData },
+              ],
+              plotLines: [
+                ...accum.plotLines,
+                ...timestampsOverThreshold.map((timestamp) => ({
+                  color: "red",
+                  width: 2,
+                  value: timestamp,
+                })),
+              ],
+            };
+          },
+          { series: [], plotLines: [] }
+        );
 
         chart.update({
           xAxis: {
-            plotLines: timestampsOverThreshold.map((timestamp) => ({
-              color: "red",
-              width: 2,
-              value: timestamp,
-            })),
+            plotLines,
           },
         });
 
-        // this only works bc of the indices... not super robusto, fine for prototype
-        chart.series[0].setData(xData, true, false);
-        chart.series[1].setData(yData, true, false);
-        chart.series[2].setData(zData, true, false);
+        series.forEach((serie, index) => {
+          // if series doesn't yet exist, create it
+          if (!chart.series.some((s) => s.name === serie.name)) {
+            chart.addSeries(serie);
+          }
+
+          // update data for this series (fresh find so it will work even if we just created it above)
+          chart.series
+            .find((s) => s.name === serie.name)
+            .setData(serie.data, true, false);
+        });
       });
     </script>
   </body>

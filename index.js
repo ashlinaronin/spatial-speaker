@@ -123,7 +123,7 @@ const init = async () => {
       }
 
       // if buffer is full, take one off the beginning to add space
-      if (movementEvents[clientId].length > EVENT_BUFFER_LENGTH) {
+      if (movementEvents[clientId].length === EVENT_BUFFER_LENGTH) {
         movementEvents[clientId].shift();
       }
 
