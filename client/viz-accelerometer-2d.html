@@ -58,24 +58,17 @@
     <div id="info">visualizing acceleration in 2d</div>
 
     <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <!-- <script src="https://code.highcharts.com/stock/highstock.js"></script> -->
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-    <figure class="highcharts-figure">
-      <div id="container"></div>
-      <p class="highcharts-description">
-        Basic line chart showing trends in a dataset. This chart includes the
-        <code>series-label</code> module, which adds a label to each line for
-        enhanced readability.
-      </p>
-    </figure>
 
     <script src="./node_modules/tone/build/Tone.js"></script>
     <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
+
+      const ACC_THRESHOLD = 3.0;
 
       const chart = Highcharts.chart("container", {
         title: {
@@ -116,6 +109,7 @@
           {
             name: "acceleration x",
             data: [],
+            id: "xseries",
           },
           {
             name: "acceleration y",
@@ -151,16 +145,32 @@
         const xData = [];
         const yData = [];
         const zData = [];
+        const timestampsOverThreshold = [];
         eventsForFirstClientId.forEach((event) => {
           xData.push(event.motionX);
           yData.push(event.motionY);
           zData.push(event.motionZ);
+
+          if (
+            event.motionX > ACC_THRESHOLD ||
+            event.motionY > ACC_THRESHOLD ||
+            event.motionZ > ACC_THRESHOLD
+          ) {
+            timestampsOverThreshold.push(event.timestamp);
+          }
         });
 
         const firstEventTimestamp = eventsForFirstClientId[0].timestamp;
 
         chart.update({
           plotOptions: { series: { pointStart: firstEventTimestamp } },
+          xAxis: {
+            plotLines: timestampsOverThreshold.map((timestamp) => ({
+              color: "red",
+              width: 2,
+              value: timestamp,
+            })),
+          },
         });
 
         // this only works bc of the indices... not super robusto, fine for prototype
