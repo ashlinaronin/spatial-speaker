@@ -1,82 +1,146 @@
-const Hapi = require('@hapi/hapi');
-const inert = require('@hapi/inert');
-const socketIo = require('socket.io');
-const { performance } = require('node:perf_hooks');
+const Hapi = require("@hapi/hapi");
+const inert = require("@hapi/inert");
+const socketIo = require("socket.io");
+const { SyncServer } = require("@ircam/sync");
 
-const getServerTime = () => performance.timeOrigin + performance.now();
-
-const init = async () => {
-
-    const server = Hapi.server({
-        port: 3000,
-        host: 'localhost'
-    });
-
-    const io = socketIo(server.listener);
-
-    await server.register(inert);
-
-    server.route({
-        method: 'GET',
-        path: '/{param*}',
-        handler: {
-            directory: {
-                path: 'client'
-            }
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/lib/{param*}',
-        handler: {
-            directory: {
-                path: 'lib'
-            }
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/node_modules/{param*}',
-        handler: {
-            directory: {
-                path: 'node_modules'
-            }
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/time',
-        handler: (request, h) => getServerTime(),
-    });
-
-    io.on("connection", (socket) => {
-        console.log("a user connected");
-        socket.on("disconnect", () => {
-          console.log("user disconnected");
-        });
-      
-        socket.on("gong", () => {
-          console.log("received gong msg, emitting");
-          io.emit("gong", { serverTime: getServerTime() });
-        });
-
-        // set up socket sync acknowledgement for GoTime
-        socket.on("time", (arg1, arg2, callback) => {
-          callback({ serverTime: getServerTime() });
-        })
-      });
-
-    await server.start();
-    console.log('Server running on %s', server.info.uri);
+const startTime = process.hrtime();
+const getTimeFunction = () => {
+  const now = process.hrtime(startTime);
+  return now[0] + now[1] * 1e-9;
 };
 
-process.on('unhandledRejection', (err) => {
+const movementEvents = {};
 
-    console.log(err);
-    process.exit(1);
+const ACC_THRESHOLD = 3.0;
+
+//
+const syncServer = new SyncServer(getTimeFunction);
+
+const init = async () => {
+  const server = Hapi.server({
+    port: 3000,
+    host: "localhost",
+  });
+
+  const io = socketIo(server.listener);
+
+  await server.register(inert);
+
+  server.route({
+    method: "GET",
+    path: "/{param*}",
+    handler: {
+      directory: {
+        path: "client",
+      },
+    },
+  });
+
+  server.route({
+    method: "GET",
+    path: "/lib/{param*}",
+    handler: {
+      directory: {
+        path: "lib",
+      },
+    },
+  });
+
+  server.route({
+    method: "GET",
+    path: "/node_modules/{param*}",
+    handler: {
+      directory: {
+        path: "node_modules",
+      },
+    },
+  });
+
+  io.on("connection", (socket) => {
+    // the `receiveFunction` and `sendFunction` functions aim at abstracting
+    // the transport layer between the SyncServer and the SyncClient
+    const receiveFunction = (callback) => {
+      socket.on("ircam", ({ isPing, pingId, clientPingTime }) => {
+        console.log("received ircam", pingId, clientPingTime);
+        if (isPing) {
+          callback(pingId, clientPingTime);
+        }
+      });
+    };
+
+    const sendFunction = (
+      pingId,
+      clientPingTime,
+      serverPingTime,
+      serverPongTime
+    ) => {
+      console.log(
+        "sending ircam",
+        pingId,
+        clientPingTime,
+        serverPingTime,
+        serverPongTime
+      );
+
+      socket.emit("ircam", {
+        isPing: false,
+        pingId,
+        clientPingTime,
+        serverPingTime,
+        serverPongTime,
+      });
+    };
+
+    syncServer.start(sendFunction, receiveFunction);
+
+    socket.on("gong", () => {
+      console.log("received gong msg, emitting");
+      io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
+    });
+
+    socket.on("movement", (movementEvent) => {
+    //   console.log("received movement event from phone", movementEvent);
+      const {
+        clientId,
+        timestamp,
+        latitude,
+        longitude,
+        motionX,
+        motionY,
+        motionZ,
+        orientationAlpha,
+        orientationBeta,
+        orientationGamma,
+      } = movementEvent;
+
+      // uniquely identify device
+      // append to map sorted by timestamp, so latest is always at the end
+
+      // if we don't have any events for this client yet, initialize an array of them
+      // also if we have more than 1000 events already, clear it out since we just want a temporary
+      // but speedy buffer
+      if (!movementEvents[clientId] || movementEvents[clientId].length > 1000) {
+        movementEvents[clientId] = [];
+      }
+      movementEvents[clientId].push(movementEvent);
+
+      // send all movement events
+      io.emit("movementEvents", movementEvents);
+
+      if (motionX > ACC_THRESHOLD || motionY > ACC_THRESHOLD || motionZ > ACC_THRESHOLD) {
+        console.log("acc over threshold, sending gong");
+        io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
+      }
+    });
+  });
+
+  await server.start();
+  console.log("Server running on %s", server.info.uri);
+};
+
+process.on("unhandledRejection", (err) => {
+  console.log(err);
+  process.exit(1);
 });
 
 init();

@@ -1,105 +1,214 @@
+<!-- meant to pair with ircam-server.js -->
 <html>
-    <head>
-        <title>spatial speaker</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-    </head>
-    <body>
-        <h1>spatial speaker</h1>
-        <button id="start">start</button>
-        Local:<br />
-        <h1 id="local"></h1>
+  <head>
+    <title>spatial speaker: sensor test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1>spatial speaker: sensor test</h1>
+    <button id="start">start</button>
+    <p id="status"></p>
+    <a id="map-link" target="_blank"></a>
+    <div id="orientation">
+      <h2>orientation</h2>
+      <p id="frontToBack">frontToBack:</p>
+      <p id="leftToRight">leftToRight:</p>
+      <p id="rotateDegrees">rotateDegrees:</p>
+    </div>
+    <div id="motion">
+      <h2>motion</h2>
+      <p id="x">x:</p>
+      <p id="y">y:</p>
+      <p id="z">z:</p>
+    </div>
 
-        Server:<br />
-        <h1 id="server"></h1>
-        <h1 id="syncs">Sync History</h1>
-        <table id="sync-table">
-        </table>
+    <script src="./node_modules/tone/build/Tone.js"></script>
+    <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
+    <script type="module">
+      import { socket, syncClient } from "./lib/sync-socket.js";
 
-        <h1>Stats</h1>
-        Offset:  <span id="offset"></span> with best precision: <span id="precision"></span>
+      // collect all the elements we'll need to refer to
+      const frontToBackEl = document.querySelector("#frontToBack");
+      const leftToRightEl = document.querySelector("#leftToRight");
+      const rotateDegreesEl = document.querySelector("#rotateDegrees");
+      const xEl = document.querySelector("#x");
+      const yEl = document.querySelector("#y");
+      const zEl = document.querySelector("#z");
+      const status = document.querySelector("#status");
+      const mapLink = document.querySelector("#map-link");
 
-        <!-- <button id="stop">stop</button> -->
-        <script src="./node_modules/tone/build/Tone.js"></script>
-        <script src="./node_modules/socket.io/client-dist/socket.io.js"></script>
-        <script src="/lib/gotime-master/GoTime.js"></script>
-        <script type="module">
-            const socket = io();
+      // generate id to send with movement
+      // note: this id will be new every time the page refreshes, it is not persistent
+      const clientId = self.crypto.randomUUID();
 
-            GoTime.setOptions({
-                AjaxURL: "/time",
-                WhenSynced: updateSyncData, // Is called for the first sync
-                OnSync: updateSyncData,// Calls on every sync starting with the second sync
-                SyncInitialTimeouts: [500, 3000, 9000, 15000],
-                SyncInterval: 20000 // Set this often for demo purposes only
-            });
+      const latestMovement = {
+        clientId,
+      };
 
-            // set up socket sync acknowledgement for GoTime
-            GoTime.wsSend(() => {
-                socket.emit("time", null, null, ({ serverTime }) => {
-                    GoTime.wsReceived(serverTime);
-                });
-                return true;
-            })
+      const sendLatestMovement = () => {
+        // todo send timestamp as well
+        socket.emit("movement", latestMovement);
+      };
 
-            function appendHistory(t, method, offset, precision) {
-                const timestampCell = document.createElement("td");
-                const methodCell = document.createElement("td");
-                const offsetCell = document.createElement("td");
-                const precisionCell = document.createElement("td");
+      const getUtcTimestamp = () => new Date().getTime();
 
-                timestampCell.innerText = (new Date(t)).toLocaleTimeString();
-                methodCell.innerText = method;
-                offsetCell.innerText = `${offset}ms`;
-                precisionCell.innerText = `${precision}ms`;
+      // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
+      function geoFindMe() {
+        mapLink.href = "";
+        mapLink.textContent = "";
 
-                const newRow = document.createElement("tr");
-                newRow.appendChild(timestampCell);
-                newRow.appendChild(methodCell);
-                newRow.appendChild(offsetCell);
-                newRow.appendChild(precisionCell);
+        function success(position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-                document.getElementById("sync-table").appendChild(newRow);
+          status.textContent = "";
+          mapLink.href = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
+          mapLink.textContent = `Latitude: ${latitude}°, Longitude: ${longitude}°`;
+
+          latestMovement.latitude = latitude;
+          latestMovement.longitude = longitude;
+
+          latestMovement.timestamp = getUtcTimestamp();
+        }
+
+        function error(err) {
+          status.textContent = `geo error, code: ${err.code}, message: ${err.message}`;
+        }
+
+        if (!navigator.geolocation) {
+          status.textContent = "Geolocation is not supported by your browser";
+        } else {
+          status.textContent = "Locating…";
+          navigator.geolocation.watchPosition(success, error, {
+            enableHighAccuracy: true,
+            maximumAge: 30000,
+            timeout: 27000,
+          });
+        }
+      }
+
+      const handleOrientationEvent = (alpha, beta, gamma) => {
+        const rotateDegrees = alpha; // alpha: rotation around z-axis
+        const frontToBack = beta; // beta: front back motion
+        const leftToRight = gamma; // gamma: left to right
+
+        frontToBackEl.textContent = `frontToBack: ${frontToBack}`;
+        leftToRightEl.textContent = `leftToRight: ${leftToRight}`;
+        rotateDegreesEl.textContent = `rotateDegrees: ${rotateDegrees}`;
+
+        latestMovement.orientationAlpha = alpha;
+        latestMovement.orientationBeta = beta;
+        latestMovement.orientationGamma = gamma;
+
+        latestMovement.timestamp = getUtcTimestamp();
+      };
+
+      const handleMotionEvent = (event) => {
+        const x = event.acceleration.x;
+        const y = event.acceleration.y;
+        const z = event.acceleration.z;
+
+        xEl.textContent = `x: ${x}`;
+        yEl.textContent = `y: ${y}`;
+        zEl.textContent = `z: ${z}`;
+
+        latestMovement.motionX = x;
+        latestMovement.motionY = y;
+        latestMovement.motionZ = z;
+
+        const timestamp = getUtcTimestamp();
+
+        latestMovement.timestamp = timestamp;
+      };
+
+      const setupDeviceOrientation = () => {
+        // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
+        window.addEventListener(
+          "deviceorientation",
+          (event) => {
+            // const rotateDegrees = event.alpha; // alpha: rotation around z-axis
+            // const leftToRight = event.gamma; // gamma: left to right
+            // const frontToBack = event.beta; // beta: front back motion
+
+            handleOrientationEvent(event.alpha, event.beta, event.gamma);
+          },
+          true
+        );
+      };
+
+      const setupDeviceMotion = () => {
+        window.addEventListener("devicemotion", handleMotionEvent, true);
+      };
+
+      const initializeSensorApis = async () => {
+        // todo handle error case
+        if ("DeviceMotionEvent" in window) {
+          if (typeof DeviceMotionEvent.requestPermission !== "function") {
+            // try to initialize without requesting permission
+            setupDeviceMotion();
+          } else {
+            // ask nicely
+            const permissionResponse =
+              await DeviceMotionEvent?.requestPermission();
+            if (permissionResponse === "granted") {
+              setupDeviceMotion();
             }
+          }
+        }
 
-            function updateSyncData(t, method, off, precision) {
-                console.log(GoTime.getHistory());
-                var local = new Date();
-                var server = new GoTime();
-                document.getElementById("local").innerText = local.getTime();
-                document.getElementById("server").innerText = server.getTime();   
-                document.getElementById("offset").innerText = GoTime.getOffset();
-                document.getElementById("precision").innerText = GoTime.getPrecision();
-                appendHistory(t, method, off, precision);
+        if ("DeviceOrientationEvent" in window) {
+          if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+            // try to initialize without requesting permission
+            setupDeviceOrientation();
+          } else {
+            // ask nicely
+            const permissionResponse =
+              await DeviceOrientationEvent.requestPermission();
+            if (permissionResponse === "granted") {
+              setupDeviceOrientation();
             }
+          }
+        }
 
-            const getNow = () => performance.timeOrigin + performance.now();
+        geoFindMe();
 
-            // wire up start and stop buttons
-            document.getElementById("start").addEventListener('click', async () => {
-                await Tone.start();
-            })
+        // start sending latest movement via socket to server
+        const interval = setInterval(sendLatestMovement, 200);
+      };
 
-            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+      // when the start button is clicked, initialize all the sensors and start Tone
+      document.querySelector("#start").addEventListener(
+        "click",
+        async () => {
+          await initializeSensorApis();
+          await Tone.start();
+        },
+        true
+      );
 
-            const player = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").toDestination();
-            var sine = new Tone.Oscillator(440, "sine").toDestination();
+      // play a gong get it on
+      const player = new Tone.Player(
+        "https://tonejs.github.io/audio/berklee/gong_1.mp3"
+      ).toDestination();
+      var sine = new Tone.Oscillator(440, "sine").toDestination();
 
-            Tone.loaded().then(async() => {
-                await wait(5000); // wait 5 secs for GoTime to sync up clocks before scheduling anything
+      Tone.loaded().then(async () => {
+        socket.on("gong", ({ serverTime }) => {
+          console.log("received gong event");
 
-                socket.on("gong", ({ serverTime }) => {
-                    console.log("received gong event");
+          const localTime = syncClient.getLocalTime();
 
-                    const offsetSeconds = GoTime.getOffset() / 1000;
-                    const toneNow = Tone.now();
+          const syncTime = syncClient.getSyncTime();
+          const timeToPlay = syncClient.getLocalTime(serverTime);
 
-                    // account for network offset twice: once in received message delay, once in clock offset
-                    const timeToPlay = Tone.now() + 0.25 - (offsetSeconds * 2);
-                    console.log("timeToPlay", timeToPlay);
+          console.log("serverTime from event", serverTime);
+          console.log("localTime", localTime);
+          console.log("syncTime", syncTime);
+          console.log("timeToPlay", timeToPlay);
 
-                    player.start(timeToPlay);
-                });
-            });
-        </script>
-    </body>
+          player.start(timeToPlay);
+        });
+      });
+    </script>
+  </body>
 </html>
