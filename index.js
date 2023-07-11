@@ -49,20 +49,26 @@ const init = async () => {
     },
   });
 
-
   // trying for deployed...
+  server.route({
+    method: "GET",
+    path: "/lib/{param*}",
+    handler: {
+      directory: {
+        path: "lib",
+      },
+    },
+  });
+
   server.route({
     method: "GET",
     path: "/spatial-speaker/lib/{param*}",
     handler: {
       directory: {
-        path: "./lib",
-        redirectToSlash: true,
-        // index: true,
+        path: "lib",
       },
     },
   });
-
 
   io.on("connection", (socket) => {
     // the `receiveFunction` and `sendFunction` functions aim at abstracting
