@@ -188,8 +188,10 @@
 
         // remove stale series that are no longer in movementEvents
         chart.series
-          .filter((s) => !series.includes((ss) => ss.name === s.name))
-          .forEach((ss) => ss.remove());
+          .filter((s) => !series.some((ss) => ss.name === s.name))
+          .forEach((ss) => {
+            ss.remove();
+          });
 
         series.forEach((serie, index) => {
           // if series doesn't yet exist, create it
