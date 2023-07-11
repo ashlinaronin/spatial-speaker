@@ -27,7 +27,7 @@ const init = async () => {
     host: "localhost",
   });
 
-  const io = socketIo(server.listener);
+  const io = socketIo(server.listener, { path: "/spatial-socket/" });
 
   await server.register(inert);
 
