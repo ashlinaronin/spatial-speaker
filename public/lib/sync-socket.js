@@ -1,7 +1,6 @@
 import SyncClient from "./ircam-client-converted.js";
 
-// todo dependent on env - won't work for local
-const socket = io("https://ashlin.me", { path: "/spatial-socket/" });
+const socket = io("", { path: "/spatial-socket/" });
 
 // return the local time in seconds
 // const getTimeFunction = () => performance.now() / 1000;

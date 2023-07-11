@@ -1,3 +1,4 @@
+const Path = require("path");
 const Hapi = require("@hapi/hapi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
@@ -25,6 +26,11 @@ const init = async () => {
   const server = Hapi.server({
     port: 3333,
     host: "localhost",
+    routes: {
+      files: {
+        relativeTo: Path.join(__dirname, "public"),
+      },
+    },
   });
 
   const io = socketIo(server.listener, { path: "/spatial-socket/" });
@@ -36,27 +42,9 @@ const init = async () => {
     path: "/{param*}",
     handler: {
       directory: {
-        path: "client",
-      },
-    },
-  });
-
-  server.route({
-    method: "GET",
-    path: "/lib/{param*}",
-    handler: {
-      directory: {
-        path: "lib",
-      },
-    },
-  });
-
-  server.route({
-    method: "GET",
-    path: "/node_modules/{param*}",
-    handler: {
-      directory: {
-        path: "node_modules",
+        path: ".",
+        redirectToSlash: true,
+        index: true,
       },
     },
   });
