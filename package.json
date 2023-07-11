@@ -16,5 +16,9 @@
     "socket.io": "^4.6.1",
     "tone": "^14.7.77",
     "ws": "^8.13.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^6.0.3"
   }
 }
