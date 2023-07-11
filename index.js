@@ -49,6 +49,21 @@ const init = async () => {
     },
   });
 
+
+  // trying for deployed...
+  server.route({
+    method: "GET",
+    path: "/spatial-speaker/{param*}",
+    handler: {
+      directory: {
+        path: ".",
+        redirectToSlash: true,
+        index: true,
+      },
+    },
+  });
+
+
   io.on("connection", (socket) => {
     // the `receiveFunction` and `sendFunction` functions aim at abstracting
     // the transport layer between the SyncServer and the SyncClient
