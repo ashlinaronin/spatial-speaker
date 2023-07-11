@@ -53,12 +53,12 @@ const init = async () => {
   // trying for deployed...
   server.route({
     method: "GET",
-    path: "/spatial-speaker/{param*}",
+    path: "/spatial-speaker/lib/{param*}",
     handler: {
       directory: {
-        path: ".",
+        path: "./lib",
         redirectToSlash: true,
-        index: true,
+        // index: true,
       },
     },
   });
