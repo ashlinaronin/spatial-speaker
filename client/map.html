@@ -52,7 +52,6 @@
       map.addLayer(markers);
 
       socket.on("movementEvents", (movementEvents) => {
-        debugger;
         console.log("movementEvents on client", movementEvents);
 
         // clear out all older markers to make space for the new
