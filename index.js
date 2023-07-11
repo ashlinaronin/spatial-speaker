@@ -23,7 +23,7 @@ const syncServer = new SyncServer(getTimeFunction);
 
 const init = async () => {
   const server = Hapi.server({
-    port: 3000,
+    port: 3333,
     host: "localhost",
   });
 
