@@ -55,11 +55,7 @@ if (navigator.mediaDevices.getUserMedia) {
     mediaRecorder.onstop = function (e) {
       console.log("data available after MediaRecorder.stop() called.");
 
-      const clipName = prompt(
-        "Enter a name for your sound clip?",
-        "My unnamed clip"
-      );
-
+      const clipName = `${clientId}_name`;
       const clipContainer = document.createElement("article");
       const clipLabel = document.createElement("p");
       const audio = document.createElement("audio");
@@ -72,12 +68,7 @@ if (navigator.mediaDevices.getUserMedia) {
       uploadButton.className = "upload";
       deleteButton.textContent = "Delete";
       deleteButton.className = "delete";
-
-      if (clipName === null) {
-        clipLabel.textContent = `${clientId}_name`;
-      } else {
-        clipLabel.textContent = clipName;
-      }
+      clipLabel.textContent = clipName;
 
       clipContainer.appendChild(audio);
       clipContainer.appendChild(clipLabel);
@@ -96,7 +87,7 @@ if (navigator.mediaDevices.getUserMedia) {
         // todo: url config for deployment
 
         const formData = new FormData();
-        formData.append("file", blob, `${clipName.replaceAll(" ", "_")}.ogg`);
+        formData.append("file", blob, `${clipName}.ogg`);
 
         const response = await fetch(
           `http://localhost:3333/recording/${clientId}`,
@@ -113,16 +104,6 @@ if (navigator.mediaDevices.getUserMedia) {
 
       deleteButton.onclick = function (e) {
         e.target.closest(".clip").remove();
-      };
-
-      clipLabel.onclick = function () {
-        const existingName = clipLabel.textContent;
-        const newClipName = prompt("Enter a new name for your sound clip?");
-        if (newClipName === null) {
-          clipLabel.textContent = existingName;
-        } else {
-          clipLabel.textContent = newClipName;
-        }
       };
     };
 
