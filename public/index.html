@@ -1,240 +1,53 @@
-<!-- meant to pair with ircam-server.js -->
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <title>spatial speaker: sensor test</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      #gong {
-        background-color: black;
-        width: 50px;
-        height: 50px;
-      }
-    </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Web dictaphone</title>
+    <link href="lib/dictaphone.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>spatial speaker: sensor test</h1>
-    <button id="start">start</button>
-    <p id="status"></p>
-    <a id="map-link" target="_blank"></a>
-    <p id="client-id"></p>
-    <div id="orientation">
-      <h2>orientation</h2>
-      <p id="frontToBack">frontToBack:</p>
-      <p id="leftToRight">leftToRight:</p>
-      <p id="rotateDegrees">rotateDegrees:</p>
+    <div class="wrapper">
+      <header>
+        <h1>Web dictaphone</h1>
+      </header>
+
+      <section class="main-controls">
+        <canvas class="visualizer" height="60px"></canvas>
+        <div id="buttons">
+          <button class="record">Record</button>
+          <button class="stop">Stop</button>
+        </div>
+      </section>
+
+      <section class="sound-clips"></section>
     </div>
-    <div id="motion">
-      <h2>motion</h2>
-      <p id="x">x:</p>
-      <p id="y">y:</p>
-      <p id="z">z:</p>
-    </div>
-    <div id="gong"></div>
 
-    <script
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"
-    ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
-    <script type="module">
-      import { socket, syncClient } from "./lib/sync-socket.js";
+    <label for="toggle">❔</label>
+    <input type="checkbox" id="toggle" />
+    <aside>
+      <h2>Information</h2>
 
-      // collect all the elements we'll need to refer to
-      const frontToBackEl = document.querySelector("#frontToBack");
-      const leftToRightEl = document.querySelector("#leftToRight");
-      const rotateDegreesEl = document.querySelector("#rotateDegrees");
-      const xEl = document.querySelector("#x");
-      const yEl = document.querySelector("#y");
-      const zEl = document.querySelector("#z");
-      const status = document.querySelector("#status");
-      const mapLink = document.querySelector("#map-link");
-      const clientIdEl = document.querySelector("#client-id");
-      const gongEl = document.querySelector("#gong");
+      <p>
+        Web dictaphone is built using
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia"
+          >getUserMedia</a
+        >
+        and the
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder_API"
+          >MediaRecorder API</a
+        >, which provides an easier way to capture Media streams.
+      </p>
 
-      // generate id to send with movement
-      // note: this id will be new every time the page refreshes, it is not persistent
-      const clientId = self.crypto.randomUUID();
-      clientIdEl.textContent = `clientId: ${clientId}`;
-
-      const latestMovement = {
-        clientId,
-      };
-
-      const sendLatestMovement = () => {
-        // todo send timestamp as well
-        socket.emit("movement", latestMovement);
-      };
-
-      const getUtcTimestamp = () => new Date().getTime();
-
-      // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
-      function geoFindMe() {
-        mapLink.href = "";
-        mapLink.textContent = "";
-
-        function success(position) {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          status.textContent = "";
-          mapLink.href = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
-          mapLink.textContent = `Latitude: ${latitude}°, Longitude: ${longitude}°`;
-
-          latestMovement.latitude = latitude;
-          latestMovement.longitude = longitude;
-
-          latestMovement.timestamp = getUtcTimestamp();
-        }
-
-        function error(err) {
-          status.textContent = `geo error, code: ${err.code}, message: ${err.message}`;
-        }
-
-        if (!navigator.geolocation) {
-          status.textContent = "Geolocation is not supported by your browser";
-        } else {
-          status.textContent = "Locating…";
-          navigator.geolocation.watchPosition(success, error, {
-            enableHighAccuracy: true,
-            maximumAge: 30000,
-            timeout: 27000,
-          });
-        }
-      }
-
-      const handleOrientationEvent = (alpha, beta, gamma) => {
-        const rotateDegrees = alpha; // alpha: rotation around z-axis
-        const frontToBack = beta; // beta: front back motion
-        const leftToRight = gamma; // gamma: left to right
-
-        frontToBackEl.textContent = `frontToBack: ${frontToBack}`;
-        leftToRightEl.textContent = `leftToRight: ${leftToRight}`;
-        rotateDegreesEl.textContent = `rotateDegrees: ${rotateDegrees}`;
-
-        latestMovement.orientationAlpha = alpha;
-        latestMovement.orientationBeta = beta;
-        latestMovement.orientationGamma = gamma;
-
-        latestMovement.timestamp = getUtcTimestamp();
-      };
-
-      const handleMotionEvent = (event) => {
-        const x = event.acceleration.x;
-        const y = event.acceleration.y;
-        const z = event.acceleration.z;
-
-        xEl.textContent = `x: ${x}`;
-        yEl.textContent = `y: ${y}`;
-        zEl.textContent = `z: ${z}`;
-
-        latestMovement.motionX = x;
-        latestMovement.motionY = y;
-        latestMovement.motionZ = z;
-
-        const timestamp = getUtcTimestamp();
-
-        latestMovement.timestamp = timestamp;
-      };
-
-      const setupDeviceOrientation = () => {
-        // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
-        window.addEventListener(
-          "deviceorientation",
-          (event) => {
-            // const rotateDegrees = event.alpha; // alpha: rotation around z-axis
-            // const leftToRight = event.gamma; // gamma: left to right
-            // const frontToBack = event.beta; // beta: front back motion
-
-            handleOrientationEvent(event.alpha, event.beta, event.gamma);
-          },
-          true
-        );
-      };
-
-      const setupDeviceMotion = () => {
-        window.addEventListener("devicemotion", handleMotionEvent, true);
-      };
-
-      const initializeSensorApis = async () => {
-        // todo handle error case
-        if ("DeviceMotionEvent" in window) {
-          if (typeof DeviceMotionEvent.requestPermission !== "function") {
-            // try to initialize without requesting permission
-            setupDeviceMotion();
-          } else {
-            // ask nicely
-            const permissionResponse =
-              await DeviceMotionEvent?.requestPermission();
-            if (permissionResponse === "granted") {
-              setupDeviceMotion();
-            }
-          }
-        }
-
-        if ("DeviceOrientationEvent" in window) {
-          if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-            // try to initialize without requesting permission
-            setupDeviceOrientation();
-          } else {
-            // ask nicely
-            const permissionResponse =
-              await DeviceOrientationEvent.requestPermission();
-            if (permissionResponse === "granted") {
-              setupDeviceOrientation();
-            }
-          }
-        }
-
-        geoFindMe();
-
-        // start sending latest movement via socket to server
-        const interval = setInterval(sendLatestMovement, 200);
-      };
-
-      // when the start button is clicked, initialize all the sensors and start Tone
-      document.querySelector("#start").addEventListener(
-        "click",
-        async () => {
-          await initializeSensorApis();
-          await Tone.start();
-        },
-        true
-      );
-
-      // play a gong get it on
-      const player = new Tone.Player(
-        "https://tonejs.github.io/audio/berklee/gong_1.mp3"
-      ).toDestination();
-      var sine = new Tone.Oscillator(440, "sine").toDestination();
-
-      const visuallyIndicateGong = () => {
-        gongEl.style.backgroundColor = "red";
-        const timeout = setTimeout(() => {
-          gongEl.style.backgroundColor = "black";
-          clearTimeout(timeout);
-        }, 100);
-      };
-
-      Tone.loaded().then(async () => {
-        socket.on("gong", ({ serverTime }) => {
-          console.log("received gong event");
-
-          const localTime = syncClient.getLocalTime();
-
-          const syncTime = syncClient.getSyncTime();
-          const timeToPlay = syncClient.getLocalTime(serverTime);
-
-          console.log("serverTime from event", serverTime);
-          console.log("localTime", localTime);
-          console.log("syncTime", syncTime);
-          console.log("timeToPlay", timeToPlay);
-
-          // player.start(timeToPlay); // synced play, but shceduled for future so more lag inherent, and not super synced anyway
-
-          player.start(); // for now just playing as soon as we get the msg
-          visuallyIndicateGong();
-        });
-      });
-    </script>
+      <p>
+        Icon courtesy of
+        <a href="http://findicons.com/search/microphone">Find Icons</a>. Thanks
+        to <a href="http://soledadpenades.com/">Sole</a> for the Oscilloscope
+        code!
+      </p>
+    </aside>
+    <script src="lib/dictaphone.js"></script>
   </body>
 </html>
