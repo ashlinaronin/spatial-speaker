@@ -74,7 +74,7 @@ if (navigator.mediaDevices.getUserMedia) {
       deleteButton.className = "delete";
 
       if (clipName === null) {
-        clipLabel.textContent = "My unnamed clip";
+        clipLabel.textContent = `${clientId}_name`;
       } else {
         clipLabel.textContent = clipName;
       }

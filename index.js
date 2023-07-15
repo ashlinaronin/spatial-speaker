@@ -85,7 +85,7 @@ const init = async () => {
       const destination = path.join(__dirname, "uploads", uploadName);
 
       try {
-        const fsResult = await fsPromises.rename(uploadPath, destination);
+        await fsPromises.rename(uploadPath, destination);
       } catch (err) {
         console.error("fs error", err);
       }
@@ -96,9 +96,8 @@ const init = async () => {
       payload: {
         output: "file",
         parse: true,
-        // allow: "multipart/form-data",
         multipart: true,
-        // uploads: path.join(__dirname, "uploads")
+        uploads: path.join(__dirname, "uploads"),
       },
     },
   });
