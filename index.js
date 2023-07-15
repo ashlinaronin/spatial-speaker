@@ -1,4 +1,5 @@
-const Path = require("path");
+const path = require("path");
+const fsPromises = require("fs/promises");
 const Hapi = require("@hapi/hapi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
@@ -28,7 +29,7 @@ const init = async () => {
     host: "localhost",
     routes: {
       files: {
-        relativeTo: Path.join(__dirname, "public"),
+        relativeTo: path.join(__dirname, "public"),
       },
     },
   });
@@ -66,6 +67,38 @@ const init = async () => {
     handler: {
       directory: {
         path: "lib",
+      },
+    },
+  });
+
+  server.route({
+    method: "POST",
+    path: "/recording/{clientId}",
+    handler: async function (request, h) {
+      console.log("request", request);
+
+      const { clientId } = request.params;
+      console.log("received file for clientId ", clientId);
+
+      const uploadName = request.payload.file.filename;
+      const uploadPath = request.payload.file.path;
+      const destination = path.join(__dirname, "uploads", uploadName);
+
+      try {
+        const fsResult = await fsPromises.rename(uploadPath, destination);
+      } catch (err) {
+        console.error("fs error", err);
+      }
+
+      return "success";
+    },
+    options: {
+      payload: {
+        output: "file",
+        parse: true,
+        // allow: "multipart/form-data",
+        multipart: true,
+        // uploads: path.join(__dirname, "uploads")
       },
     },
   });
