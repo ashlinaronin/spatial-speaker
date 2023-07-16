@@ -18,5 +18,9 @@ CREATE TABLE user (
 
 CREATE TABLE user_file (
     fileId TEXT PRIMARY KEY,
+    userId TEXT,
     filePath TEXT UNIQUE,
+    FOREIGN KEY (userId) REFERENCES user (userId)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION
 );

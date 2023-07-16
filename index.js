@@ -4,6 +4,7 @@ const Hapi = require("@hapi/hapi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
 const { SyncServer } = require("@ircam/sync");
+const { addUser } = require("./db");
 
 const startTime = process.hrtime();
 const getTimeFunction = () => {
@@ -90,7 +91,10 @@ const init = async () => {
         console.error("fs error", err);
       }
 
-      return "success";
+      const teamId = request.payload.teamId;
+      addUser(clientId, teamId, uploadName, destination);
+
+      return { success: true };
     },
     options: {
       payload: {
