@@ -75,7 +75,6 @@ button:active {
    * also show a scrollbar when there are too many clips to show
    * in the available space */
 .sound-clips {
-  flex: 1;
   overflow: auto;
 }
 
