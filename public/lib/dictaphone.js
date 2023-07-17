@@ -1,14 +1,11 @@
 // set up basic variables for app
 
-const record = document.querySelector(".record");
-const stop = document.querySelector(".stop");
+const recordButton = document.querySelector(".record");
 const soundClips = document.querySelector(".sound-clips");
 const canvas = document.querySelector(".visualizer");
 const mainSection = document.querySelector(".main-controls");
 
-// disable stop button while not recording
-
-stop.disabled = true;
+let recording = false;
 
 // visualiser setup - create web audio api context and canvas
 
@@ -30,26 +27,23 @@ if (navigator.mediaDevices.getUserMedia) {
 
     visualize(stream);
 
-    record.onclick = function () {
-      mediaRecorder.start();
-      console.log(mediaRecorder.state);
-      console.log("recorder started");
-      record.style.background = "red";
-
-      stop.disabled = false;
-      record.disabled = true;
-    };
-
-    stop.onclick = function () {
-      mediaRecorder.stop();
-      console.log(mediaRecorder.state);
-      console.log("recorder stopped");
-      record.style.background = "";
-      record.style.color = "";
-      // mediaRecorder.requestData();
-
-      stop.disabled = true;
-      record.disabled = false;
+    recordButton.onclick = function () {
+      if (recording) {
+        recording = false;
+        mediaRecorder.stop();
+        console.log(mediaRecorder.state);
+        console.log("recorder stopped");
+        recordButton.style.background = "";
+        recordButton.style.color = "";
+        recordButton.textContent = "record";
+      } else {
+        recording = true;
+        mediaRecorder.start();
+        console.log(mediaRecorder.state);
+        console.log("recorder started");
+        recordButton.style.background = "red";
+        recordButton.textContent = "stop";
+      }
     };
 
     mediaRecorder.onstop = function (e) {
@@ -140,7 +134,6 @@ function visualize(stream) {
   const dataArray = new Uint8Array(bufferLength);
 
   source.connect(analyser);
-  //analyser.connect(audioCtx.destination);
 
   draw();
 
