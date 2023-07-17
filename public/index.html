@@ -17,14 +17,23 @@
       </header>
 
       <section class="main-controls">
-        <label for="team">Choose your team:</label>
-        <select name="teamId" class="team">
-          <option value="">Choose a team</option>
-          <option value="1">Earth</option>
-          <option value="2">Air</option>
-          <option value="3">Wind</option>
-          <option value="4">Fire</option>
-        </select>
+        <fieldset>
+          <legend>choose your team</legend>
+          <div>
+            <input type="radio" id="earth" name="team" value="1" />
+            <label for="earth">🪨 Earth</label>
+
+            <input type="radio" id="air" name="team" value="2" />
+            <label for="air">☁️ Air</label>
+
+            <input type="radio" id="wind" name="team" value="3" />
+            <label for="wind">🌬️ Wind</label>
+
+            <input type="radio" id="fire" name="team" value="4" />
+            <label for="fire">🔥 Fire</label>
+          </div>
+        </fieldset>
+
         <canvas class="visualizer" height="60px"></canvas>
         <div id="buttons">
           <button class="record">Record</button>

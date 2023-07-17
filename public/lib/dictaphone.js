@@ -5,7 +5,6 @@ const stop = document.querySelector(".stop");
 const soundClips = document.querySelector(".sound-clips");
 const canvas = document.querySelector(".visualizer");
 const mainSection = document.querySelector(".main-controls");
-const teamSelect = document.querySelector(".team");
 
 // disable stop button while not recording
 
@@ -88,7 +87,12 @@ if (navigator.mediaDevices.getUserMedia) {
         // todo: url config for deployment
 
         const formData = new FormData();
-        formData.append("teamId", teamSelect.value);
+
+        const selectedTeamId = document.querySelector(
+          "input[name=team]:checked"
+        ).value;
+
+        formData.append("teamId", selectedTeamId);
         formData.append("file", blob, `${clipName}.ogg`);
 
         const response = await fetch(
