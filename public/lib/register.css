@@ -54,9 +54,11 @@ canvas {
   width: calc(50% - 0.25rem);
 }
 
-button {
+button,
+.button {
   font-size: 1rem;
   background: #0088cc;
+  text-decoration: none; /* clear link styles since we use .button for `a` too */
   text-align: center;
   color: white;
   border: none;
@@ -65,12 +67,15 @@ button {
 }
 
 button:hover,
-button:focus {
+button:focus,
+.button:hover,
+.button:focus {
   box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 1);
   background: #0ae;
 }
 
-button:active {
+button:active,
+.button:active {
   box-shadow: inset 0px 0px 20px rgba(0, 0, 0, 0.5);
   transform: translateY(2px);
 }
@@ -100,17 +105,6 @@ audio {
 .clip p {
   display: inline-block;
   font-size: 1rem;
-}
-
-.clip button {
-  font-size: 1rem;
-  float: right;
-}
-
-button.delete {
-  background: #f00;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8rem;
 }
 
 /* Adjustments for wider screens */

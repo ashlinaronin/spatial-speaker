@@ -30,25 +30,6 @@ const onGumSuccess = function (stream) {
 
   visualize(stream);
 
-  recordButton.onclick = function () {
-    if (recording) {
-      recording = false;
-      mediaRecorder.stop();
-      console.log(mediaRecorder.state);
-      console.log("recorder stopped");
-      recordButton.style.background = "";
-      recordButton.style.color = "";
-      recordButton.textContent = "record";
-    } else {
-      recording = true;
-      mediaRecorder.start();
-      console.log(mediaRecorder.state);
-      console.log("recorder started");
-      recordButton.style.background = "red";
-      recordButton.textContent = "stop";
-    }
-  };
-
   mediaRecorder.onstop = function (e) {
     console.log("data available after MediaRecorder.stop() called.");
 
@@ -75,6 +56,10 @@ const onGumSuccess = function (stream) {
 
     audio.src = audioURL;
     console.log("recorder stopped");
+
+    // after the recording has been made, transition to next phase
+    // this allows us to allow the user to only use one button instead of making them click stop _and_ next
+    transitionToNextPhase();
   };
 
   mediaRecorder.ondataavailable = function (event) {
@@ -96,7 +81,7 @@ const onGumSuccess = function (stream) {
     );
   };
 
-  nextButton.onclick = async function () {
+  const transitionToNextPhase = async () => {
     nextPhase();
 
     if (getPhase() === PHASES.RECORD_NAME) {
@@ -105,6 +90,29 @@ const onGumSuccess = function (stream) {
 
     if (getPhase() === PHASES.UPLOAD) {
       await uploadRecordings();
+    }
+  };
+
+  nextButton.onclick = async function () {
+    transitionToNextPhase();
+  };
+
+  recordButton.onclick = function () {
+    if (recording) {
+      recording = false;
+      mediaRecorder.stop();
+      console.log(mediaRecorder.state);
+      console.log("recorder stopped");
+      recordButton.style.background = "";
+      recordButton.style.color = "";
+      recordButton.textContent = "record";
+    } else {
+      recording = true;
+      mediaRecorder.start();
+      console.log(mediaRecorder.state);
+      console.log("recorder started");
+      recordButton.style.background = "red";
+      recordButton.textContent = "stop";
     }
   };
 };
