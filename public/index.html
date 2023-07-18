@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>welcome</title>
-    <link href="lib/dictaphone.css" rel="stylesheet" type="text/css" />
+    <link href="lib/register.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <div class="wrapper">
@@ -52,9 +52,11 @@
       </section>
 
       <div>
-        <button class="next">next</button>
+        <button class="next phase-0 phase-1 phase-2">next</button>
+        <!-- note: href gets set programatically in order to add clientId -->
+        <a class="sensor-page-link phase-3 hidden">sensor page</a>
       </div>
     </div>
-    <script src="lib/dictaphone.js" type="module"></script>
+    <script src="lib/register.js" type="module"></script>
   </body>
 </html>

@@ -52,7 +52,12 @@
 
       // generate id to send with movement
       // note: this id will be new every time the page refreshes, it is not persistent
-      const clientId = self.crypto.randomUUID();
+      const searchParams = new URLSearchParams(window.location.search);
+      const clientId = searchParams.get("clientId");
+      if (!clientId) {
+        throw new Error("no clientId in search params");
+      }
+
       clientIdEl.textContent = `clientId: ${clientId}`;
 
       const latestMovement = {
