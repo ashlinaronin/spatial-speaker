@@ -1,10 +1,11 @@
 const path = require("path");
 const fsPromises = require("fs/promises");
 const Hapi = require("@hapi/hapi");
+const Joi = require("@hapi/joi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
 const { SyncServer } = require("@ircam/sync");
-const { addUser } = require("./db");
+const { registerUser, addRecording } = require("./db");
 
 const startTime = process.hrtime();
 const getTimeFunction = () => {
@@ -74,10 +75,28 @@ const init = async () => {
 
   server.route({
     method: "POST",
+    path: "/register",
+    handler: async function (request, h) {
+      const { clientId, teamId } = request.payload;
+      console.log(`registering clientId ${clientId} with team ${teamId}`);
+      registerUser(clientId, teamId);
+
+      return { success: true };
+    },
+    options: {
+      validate: {
+        payload: Joi.object({
+          clientId: Joi.string(),
+          teamId: Joi.number(),
+        }),
+      },
+    },
+  });
+
+  server.route({
+    method: "POST",
     path: "/recording/{clientId}",
     handler: async function (request, h) {
-      console.log("request", request);
-
       const { clientId } = request.params;
       console.log("received file for clientId ", clientId);
 
@@ -91,8 +110,7 @@ const init = async () => {
         console.error("fs error", err);
       }
 
-      const teamId = request.payload.teamId;
-      addUser(clientId, teamId, uploadName, destination);
+      addRecording(clientId, uploadName, destination);
 
       return { success: true };
     },

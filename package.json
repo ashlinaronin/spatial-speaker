@@ -12,6 +12,7 @@
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
     "@hapi/inert": "^7.1.0",
+    "@hapi/joi": "^17.1.1",
     "@ircam/sync": "^2.1.0",
     "socket.io": "^4.6.1",
     "sqlite3": "^5.1.6",

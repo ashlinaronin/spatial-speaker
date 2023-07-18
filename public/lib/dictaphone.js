@@ -9,6 +9,19 @@ let recordings = [];
 let recording = false;
 const clientId = self.crypto.randomUUID();
 
+const registerUser = async function () {
+  const selectedTeamId = document.querySelector(
+    "input[name=team]:checked"
+  ).value;
+
+  // todo: url config for deployment
+  await fetch(`http://localhost:3333/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ clientId, teamId: Number(selectedTeamId) }),
+  });
+};
+
 const onGumSuccess = function (stream) {
   let chunks = [];
   const mediaRecorder = new MediaRecorder(stream);
@@ -67,29 +80,29 @@ const onGumSuccess = function (stream) {
   };
 
   const uploadRecordings = async function () {
-    const selectedTeamId = document.querySelector(
-      "input[name=team]:checked"
-    ).value;
+    await Promise.all(
+      recordings.map(async ({ blob, clipName }) => {
+        const formData = new FormData();
+        formData.append("file", blob, `${clipName}.ogg`);
 
-    // try serializing reqs to see if they have clientId collision issue
-    for (const { blob, clipName } of recordings) {
-      const formData = new FormData();
-      formData.append("teamId", selectedTeamId);
-      formData.append("file", blob, `${clipName}.ogg`);
-
-      // todo: url config for deployment
-      await fetch(`http://localhost:3333/recording/${clientId}`, {
-        method: "POST",
-        body: formData,
-      });
-    }
+        // todo: url config for deployment
+        await fetch(`http://localhost:3333/recording/${clientId}`, {
+          method: "POST",
+          body: formData,
+        });
+      })
+    );
   };
 
-  nextButton.onclick = function () {
+  nextButton.onclick = async function () {
     nextPhase();
 
+    if (getPhase() === PHASES.RECORD_NAME) {
+      await registerUser();
+    }
+
     if (getPhase() === PHASES.UPLOAD) {
-      uploadRecordings();
+      await uploadRecordings();
     }
   };
 };
