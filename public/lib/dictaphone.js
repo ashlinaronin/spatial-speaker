@@ -71,19 +71,18 @@ const onGumSuccess = function (stream) {
       "input[name=team]:checked"
     ).value;
 
-    await Promise.all(
-      recordings.map(async ({ clipName, blob }) => {
-        const formData = new FormData();
-        formData.append("teamId", selectedTeamId);
-        formData.append("file", blob, `${clipName}.ogg`);
+    // try serializing reqs to see if they have clientId collision issue
+    for (const { blob, clipName } of recordings) {
+      const formData = new FormData();
+      formData.append("teamId", selectedTeamId);
+      formData.append("file", blob, `${clipName}.ogg`);
 
-        // todo: url config for deployment
-        await fetch(`http://localhost:3333/recording/${clientId}`, {
-          method: "POST",
-          body: formData,
-        });
-      })
-    );
+      // todo: url config for deployment
+      await fetch(`http://localhost:3333/recording/${clientId}`, {
+        method: "POST",
+        body: formData,
+      });
+    }
   };
 
   nextButton.onclick = function () {
