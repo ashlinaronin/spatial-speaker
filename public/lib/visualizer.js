@@ -23,6 +23,11 @@ export function visualize(stream) {
 
   source.connect(analyser);
 
+  const gradient = canvasCtx.createLinearGradient(0, 0, 200, 0);
+  gradient.addColorStop(0, "green");
+  gradient.addColorStop(0.7, "white");
+  gradient.addColorStop(1, "pink");
+
   draw();
 
   function draw() {
@@ -33,11 +38,11 @@ export function visualize(stream) {
 
     analyser.getByteTimeDomainData(dataArray);
 
-    canvasCtx.fillStyle = "rgb(200, 200, 200)";
+    canvasCtx.fillStyle = "white";
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
     canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+    canvasCtx.strokeStyle = gradient;
 
     canvasCtx.beginPath();
 
