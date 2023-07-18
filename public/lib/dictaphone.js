@@ -1,19 +1,16 @@
-// set up basic variables for app
 import { visualize } from "./visualizer.js";
+import { PHASES, getPhase, nextPhase } from "./phases.js";
 
 const recordButton = document.querySelector(".record");
 const nextButton = document.querySelector(".next");
 const soundClips = document.querySelector(".sound-clips");
-let currentClipName = "";
-let recordings = [];
 
+let recordings = [];
 let recording = false;
 const clientId = self.crypto.randomUUID();
 
-const constraints = { audio: true };
-let chunks = [];
-
 const onGumSuccess = function (stream) {
+  let chunks = [];
   const mediaRecorder = new MediaRecorder(stream);
 
   visualize(stream);
@@ -40,7 +37,7 @@ const onGumSuccess = function (stream) {
   mediaRecorder.onstop = function (e) {
     console.log("data available after MediaRecorder.stop() called.");
 
-    const clipName = `${clientId}_name`;
+    const clipName = `${clientId}_${getPhase()}`;
     const clipContainer = document.createElement("article");
     const clipLabel = document.createElement("p");
     const audio = document.createElement("audio");
@@ -56,7 +53,7 @@ const onGumSuccess = function (stream) {
     audio.controls = true;
     const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
 
-    recordings.push({ name: clipName, blob });
+    recordings.push({ clipName, blob });
 
     chunks = [];
     const audioURL = window.URL.createObjectURL(blob);
@@ -65,35 +62,36 @@ const onGumSuccess = function (stream) {
     console.log("recorder stopped");
   };
 
-  mediaRecorder.ondataavailable = function (e) {
-    chunks.push(e.data);
+  mediaRecorder.ondataavailable = function (event) {
+    chunks.push(event.data);
   };
 
-  nextButton.onclick = async function (e) {
-    // todo: url config for deployment
-
-    const formData = new FormData();
-
+  const uploadRecordings = async function () {
     const selectedTeamId = document.querySelector(
       "input[name=team]:checked"
     ).value;
 
-    const { clipName, blob } = recordings[0];
+    await Promise.all(
+      recordings.map(async ({ clipName, blob }) => {
+        const formData = new FormData();
+        formData.append("teamId", selectedTeamId);
+        formData.append("file", blob, `${clipName}.ogg`);
 
-    formData.append("teamId", selectedTeamId);
-    formData.append("file", blob, `${clipName}.ogg`);
-
-    const response = await fetch(
-      `http://localhost:3333/recording/${clientId}`,
-      {
-        method: "POST",
-        body: formData,
-      }
+        // todo: url config for deployment
+        await fetch(`http://localhost:3333/recording/${clientId}`, {
+          method: "POST",
+          body: formData,
+        });
+      })
     );
+  };
 
-    const jsonResponse = response.json();
+  nextButton.onclick = function () {
+    nextPhase();
 
-    console.log("recording post response", jsonResponse);
+    if (getPhase() === PHASES.UPLOAD) {
+      uploadRecordings();
+    }
   };
 };
 
@@ -105,6 +103,6 @@ if (!navigator.mediaDevices.getUserMedia) {
   console.log("getUserMedia not supported in your browser");
 } else {
   navigator.mediaDevices
-    .getUserMedia(constraints)
+    .getUserMedia({ audio: true })
     .then(onGumSuccess, onGumError);
 }

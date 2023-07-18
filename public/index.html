@@ -10,13 +10,13 @@
     <div class="wrapper">
       <header>
         <h1>welcome to our cult</h1>
-        <p>
-          to get started, we'll need a few things from you. first, record your
-          name.
-        </p>
       </header>
 
-      <section class="main-controls">
+      <section class="phase phase-0">
+        <p>
+          to get started, we'll need a few things from you. first, choose your
+          team.
+        </p>
         <fieldset>
           <legend>choose your team</legend>
           <div>
@@ -33,14 +33,24 @@
             <label for="fire">🔥 Fire</label>
           </div>
         </fieldset>
-
-        <canvas class="visualizer" height="60px"></canvas>
-        <div id="buttons">
+      </section>
+      <section class="phase phase-1 hidden">
+        <p>next, record your name.</p>
+      </section>
+      <section class="phase phase-2 hidden">
+        <p>now, please record a percussive sound.</p>
+      </section>
+      <section class="main-controls phase phase-1 phase-2 hidden">
+        <canvas class="visualizer" height="60px" width="100%"></canvas>
+        <div class="buttons">
           <button class="record">record</button>
         </div>
       </section>
-
       <section class="sound-clips"></section>
+      <section class="phase phase-3 hidden">
+        <p>thank you.</p>
+      </section>
+
       <div>
         <button class="next">next</button>
       </div>
