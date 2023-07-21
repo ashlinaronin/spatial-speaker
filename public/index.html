@@ -15,7 +15,9 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1 class="margin-bottom">~welcome to the wave~</h1>
+        <h1 class="margin-bottom">
+          ~welcome to the wave~ <span class="phase">0/3</span>
+        </h1>
       </header>
 
       <section class="phase phase-0">
@@ -24,7 +26,7 @@
         </p>
 
         <fieldset>
-          <legend>Select fundamental.</legend>
+          <legend>Select fundamental</legend>
           <div>
             <input type="radio" id="earth" name="team" value="1" checked />
             <label for="earth">🪨 Earth</label>
@@ -54,11 +56,20 @@
       </section>
       <section class="sound-clips"></section>
 
-      <div>
+      <div class="buttons">
         <button class="next phase-0">next</button>
         <!-- note: href gets set programatically in order to add clientId -->
         <a class="sensor-page-link button phase-3 hidden">you may enter</a>
       </div>
+
+      <!--
+      <section class="breadcrumbs">
+        <span class="phase-0 phase-1 phase-2 phase-3">fundamental</span>
+        <span class="phase-1 phase-2 phase-3 hidden">name</span>
+        <span class="phase-2 phase-3 hidden">perc</span>
+        <span class="phase-3 hidden">upload</span>
+      </section>
+      -->
     </div>
     <script src="lib/register.js" type="module"></script>
   </body>

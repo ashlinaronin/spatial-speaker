@@ -72,10 +72,12 @@ canvas {
   justify-content: space-between;
 }
 
-.buttons button {
+.buttons button,
+.buttons .button {
   font-size: 1rem;
   padding: 1rem;
-  width: calc(50% - 0.25rem);
+  /* width: calc(50% - 0.25rem); */
+  width: calc(100% - 0.25rem);
 }
 
 button,
@@ -178,3 +180,9 @@ fieldset input {
     margin: 0 auto;
   }
 }
+
+/*
+.breadcrumbs >:not(:last-child):after {
+  content: " > ";
+}
+*/

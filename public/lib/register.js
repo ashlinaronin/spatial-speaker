@@ -1,5 +1,5 @@
 import { visualize } from "./visualizer.js";
-import { PHASES, getPhase, nextPhase } from "./phases.js";
+import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 
 const recordButton = document.querySelector(".record");
 const nextButton = document.querySelector(".next");
@@ -17,7 +17,7 @@ const registerUser = async function () {
   ).value;
 
   // todo: url config for deployment
-  await fetch(`http://localhost:3333/register`, {
+  await fetch(`register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ clientId, teamId: Number(selectedTeamId) }),
@@ -33,14 +33,14 @@ const onGumSuccess = function (stream) {
   mediaRecorder.onstop = function (e) {
     console.log("data available after MediaRecorder.stop() called.");
 
-    const clipName = `${clientId}_${getPhase()}`;
+    const clipName = `${clientId}_${getPhase().value}`;
     const clipContainer = document.createElement("article");
     const clipLabel = document.createElement("p");
     const audio = document.createElement("audio");
 
     clipContainer.classList.add("clip");
     audio.setAttribute("controls", "");
-    clipLabel.textContent = clipName;
+    clipLabel.textContent = getPhaseFriendlyName();
 
     clipContainer.appendChild(audio);
     clipContainer.appendChild(clipLabel);
@@ -73,7 +73,7 @@ const onGumSuccess = function (stream) {
         formData.append("file", blob, `${clipName}.ogg`);
 
         // todo: url config for deployment
-        await fetch(`http://localhost:3333/recording/${clientId}`, {
+        await fetch(`recording/${clientId}`, {
           method: "POST",
           body: formData,
         });
@@ -84,11 +84,11 @@ const onGumSuccess = function (stream) {
   const transitionToNextPhase = async () => {
     nextPhase();
 
-    if (getPhase() === PHASES.RECORD_NAME) {
+    if (getPhase().value === PHASES.RECORD_NAME.value) {
       await registerUser();
     }
 
-    if (getPhase() === PHASES.UPLOAD) {
+    if (getPhase().value === PHASES.UPLOAD.value) {
       await uploadRecordings();
     }
   };

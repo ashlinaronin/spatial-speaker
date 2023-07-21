@@ -98,11 +98,14 @@ const init = async () => {
     path: "/recording/{clientId}",
     handler: async function (request, h) {
       const { clientId } = request.params;
-      console.log("received file for clientId ", clientId);
 
       const uploadName = request.payload.file.filename;
       const uploadPath = request.payload.file.path;
       const destination = path.join(__dirname, "uploads", uploadName);
+
+      console.log(
+        `received file for clientId ${clientId} with uploadName ${uploadName}`
+      );
 
       try {
         await fsPromises.rename(uploadPath, destination);

@@ -1,14 +1,19 @@
 export const PHASES = {
-  SELECT_TEAM: "SELECT_TEAM",
-  RECORD_NAME: "RECORD_NAME",
-  RECORD_CLICK: "RECORD_CLICK",
-  UPLOAD: "UPLOAD",
+  SELECT_TEAM: { friendlyName: "team", value: "SELECT_TEAM" },
+  RECORD_NAME: { friendlyName: "name", value: "RECORD_NAME" },
+  RECORD_CLICK: { friendlyName: "click", value: "RECORD_CLICK" },
+  UPLOAD: { friendlyName: "upload", value: "UPLOAD" },
 };
 const PHASES_ARRAY = Object.values(PHASES);
+const phaseEl = document.querySelector(".phase");
 let phaseIndex = 0;
 
 export function getPhase() {
   return PHASES_ARRAY[phaseIndex];
+}
+
+export function getPhaseFriendlyName() {
+  return PHASES_ARRAY[phaseIndex]?.friendlyName;
 }
 
 export function nextPhase() {
@@ -30,4 +35,6 @@ export function nextPhase() {
 
   // reset visualizer width (when it is hidden, it doesn't get width set properly)
   window.onresize();
+
+  phaseEl.textContent = `${phaseIndex}/${PHASES_ARRAY.length - 1}`;
 }
