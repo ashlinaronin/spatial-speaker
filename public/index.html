@@ -4,30 +4,36 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>welcome</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lumanosimo&family=Codystar&display=swap"
+      rel="stylesheet"
+    />
     <link href="lib/register.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <div class="wrapper">
       <header>
-        <h1>welcome to our cult</h1>
+        <h1 class="margin-bottom">~welcome to the wave~</h1>
       </header>
 
       <section class="phase phase-0">
         <p>
-          to get started, we'll need a few things from you. first, choose your
-          team.
+          Listen. You are beginning to synchronize with the cosmic resonance.
         </p>
+
         <fieldset>
-          <legend>choose your team</legend>
+          <legend>Select fundamental.</legend>
           <div>
             <input type="radio" id="earth" name="team" value="1" checked />
             <label for="earth">🪨 Earth</label>
 
-            <input type="radio" id="air" name="team" value="2" />
-            <label for="air">☁️ Air</label>
+            <input type="radio" id="water" name="team" value="2" />
+            <label for="water">🌊 Water</label>
 
-            <input type="radio" id="wind" name="team" value="3" />
-            <label for="wind">🌬️ Wind</label>
+            <input type="radio" id="air" name="team" value="3" />
+            <label for="air">☁️ Air</label>
 
             <input type="radio" id="fire" name="team" value="4" />
             <label for="fire">🔥 Fire</label>
@@ -35,10 +41,10 @@
         </fieldset>
       </section>
       <section class="phase phase-1 hidden">
-        <p>next, record your name.</p>
+        <p>Press record, say your name, then press stop.</p>
       </section>
       <section class="phase phase-2 hidden">
-        <p>now, please record a percussive sound.</p>
+        <p>Now, please record a percussive sound.</p>
       </section>
       <section class="main-controls phase phase-1 phase-2 hidden">
         <canvas class="visualizer" height="60px" width="100%"></canvas>
@@ -51,7 +57,7 @@
       <div>
         <button class="next phase-0">next</button>
         <!-- note: href gets set programatically in order to add clientId -->
-        <a class="sensor-page-link button phase-3 hidden">enter</a>
+        <a class="sensor-page-link button phase-3 hidden">you may enter</a>
       </div>
     </div>
     <script src="lib/register.js" type="module"></script>

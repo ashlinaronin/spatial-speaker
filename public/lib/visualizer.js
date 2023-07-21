@@ -38,8 +38,7 @@ export function visualize(stream) {
 
     analyser.getByteTimeDomainData(dataArray);
 
-    canvasCtx.fillStyle = "white";
-    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = gradient;
