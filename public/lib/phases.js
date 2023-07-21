@@ -1,7 +1,7 @@
 export const PHASES = {
   SELECT_TEAM: { friendlyName: "team", value: "SELECT_TEAM" },
   RECORD_NAME: { friendlyName: "name", value: "RECORD_NAME" },
-  RECORD_CLICK: { friendlyName: "click", value: "RECORD_CLICK" },
+  RECORD_CLICK: { friendlyName: "sudden sound", value: "RECORD_CLICK" },
   UPLOAD: { friendlyName: "upload", value: "UPLOAD" },
 };
 const PHASES_ARRAY = Object.values(PHASES);

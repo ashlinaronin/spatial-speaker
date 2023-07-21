@@ -1,3 +1,6 @@
+import WaveSurfer from "https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js";
+import Spectrogram from "https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js";
+
 import { visualize } from "./visualizer.js";
 import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 
@@ -30,32 +33,41 @@ const onGumSuccess = function (stream) {
 
   visualize(stream);
 
-  mediaRecorder.onstop = function (e) {
-    console.log("data available after MediaRecorder.stop() called.");
+  mediaRecorder.onstop = function () {
+    console.log("recorder stopped");
 
     const clipName = `${clientId}_${getPhase().value}`;
     const clipContainer = document.createElement("article");
-    const clipLabel = document.createElement("p");
-    const audio = document.createElement("audio");
+    clipContainer.id = `audio_${clipName}`; // id must start with letter and guid may or may not... so this is a safe way to ensure it always starts with a letter
 
-    clipContainer.classList.add("clip");
-    audio.setAttribute("controls", "");
-    clipLabel.textContent = getPhaseFriendlyName();
-
-    clipContainer.appendChild(audio);
-    clipContainer.appendChild(clipLabel);
     soundClips.appendChild(clipContainer);
 
-    audio.controls = true;
     const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-
-    recordings.push({ clipName, blob });
-
-    chunks = [];
     const audioURL = window.URL.createObjectURL(blob);
+    recordings.push({ clipName, blob });
+    chunks = [];
 
-    audio.src = audioURL;
-    console.log("recorder stopped");
+    // // Create an instance of WaveSurfer
+    // const ws = WaveSurfer.create({
+    //   container: `#${clipContainer.id}`,
+    //   waveColor: "rgb(200, 0, 200)",
+    //   progressColor: "rgb(100, 0, 100)",
+    //   url: audioURL,
+    //   sampleRate: 22050,
+    // });
+
+    // // Initialize the Spectrogram plugin
+    // ws.registerPlugin(
+    //   Spectrogram.create({
+    //     labels: true,
+    //     height: 256,
+    //   })
+    // );
+
+    // // Play on click
+    // ws.once("interaction", () => {
+    //   ws.play();
+    // });
 
     // after the recording has been made, transition to next phase
     // this allows us to allow the user to only use one button instead of making them click stop _and_ next
@@ -83,6 +95,8 @@ const onGumSuccess = function (stream) {
 
   const transitionToNextPhase = async () => {
     nextPhase();
+
+    recordButton.textContent = `record ${getPhaseFriendlyName()}`;
 
     if (getPhase().value === PHASES.RECORD_NAME.value) {
       await registerUser();
