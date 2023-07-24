@@ -9,10 +9,10 @@ const ACCEL_LOW_INPUT = 0;
 const ACCEL_HI_INPUT = 10;
 const SENSOR_READ_MS = 200;
 const RAMP_TIME = SENSOR_READ_MS / 1000 / 2;
-const FILTER_LOW_FREQ = 2000;
-const FILTER_HI_FREQ = 12000;
+const FILTER_LOW_FREQ = 400;
+const FILTER_HI_FREQ = 2000;
 const PLAYBACK_RATE_LOW = 1.0;
-const PLAYBACK_RATE_HI = 20.0;
+const PLAYBACK_RATE_HI = 10.0;
 
 export const setupDualResonator = () => {
   const clientId = getClientId();
