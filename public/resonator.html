@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <title>spatial speaker: resonator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1>spatial speaker: resonator</h1>
+    <button id="start">start</button>
+    <p id="status"></p>
+    <p id="client-id"></p>
+
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <script type="module">
+      import { socket, syncClient } from "./lib/sync-socket.js";
+      import {
+        geoFindMe,
+        handleOrientationEvent,
+        handleMotionEvent,
+        setupDeviceOrientation,
+        setupDeviceMotion,
+        initializeSensorApis,
+      } from "./lib/sensors.js";
+      import { getClientId } from "./lib/getClientId.js";
+
+      // collect all the elements we'll need to refer to
+      const status = document.querySelector("#status");
+      const clientIdEl = document.querySelector("#client-id");
+
+      const clientId = getClientId();
+      clientIdEl.textContent = `clientId: ${clientId}`;
+
+      // when the start button is clicked, initialize all the sensors and start Tone
+      document.querySelector("#start").addEventListener(
+        "click",
+        async () => {
+          await initializeSensorApis();
+          await Tone.start();
+        },
+        true
+      );
+
+      const player = new Tone.Player(
+        "https://tonejs.github.io/audio/berklee/gong_1.mp3"
+      ).toDestination();
+      var sine = new Tone.Oscillator(440, "sine").toDestination();
+
+      Tone.loaded().then(async () => {});
+    </script>
+  </body>
+</html>

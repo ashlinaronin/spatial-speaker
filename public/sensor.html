@@ -37,6 +37,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
+      import {
+        geoFindMe,
+        handleOrientationEvent,
+        handleMotionEvent,
+        setupDeviceOrientation,
+        setupDeviceMotion,
+        initializeSensorApis,
+      } from "./lib/sensors.js";
+      import { getClientId } from "./lib/getClientId.js";
 
       // collect all the elements we'll need to refer to
       const frontToBackEl = document.querySelector("#frontToBack");
@@ -50,146 +59,9 @@
       const clientIdEl = document.querySelector("#client-id");
       const gongEl = document.querySelector("#gong");
 
-      // generate id to send with movement
-      // note: this id will be new every time the page refreshes, it is not persistent
-      const searchParams = new URLSearchParams(window.location.search);
-      const clientId = searchParams.get("clientId");
-      if (!clientId) {
-        throw new Error("no clientId in search params");
-      }
-
+      // grab clientId from query params
+      const clientId = getClientId();
       clientIdEl.textContent = `clientId: ${clientId}`;
-
-      const latestMovement = {
-        clientId,
-      };
-
-      const sendLatestMovement = () => {
-        // todo send timestamp as well
-        socket.emit("movement", latestMovement);
-      };
-
-      const getUtcTimestamp = () => new Date().getTime();
-
-      // adopted from https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API#examples
-      function geoFindMe() {
-        mapLink.href = "";
-        mapLink.textContent = "";
-
-        function success(position) {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          status.textContent = "";
-          mapLink.href = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
-          mapLink.textContent = `Latitude: ${latitude}°, Longitude: ${longitude}°`;
-
-          latestMovement.latitude = latitude;
-          latestMovement.longitude = longitude;
-
-          latestMovement.timestamp = getUtcTimestamp();
-        }
-
-        function error(err) {
-          status.textContent = `geo error, code: ${err.code}, message: ${err.message}`;
-        }
-
-        if (!navigator.geolocation) {
-          status.textContent = "Geolocation is not supported by your browser";
-        } else {
-          status.textContent = "Locating…";
-          navigator.geolocation.watchPosition(success, error, {
-            enableHighAccuracy: true,
-            maximumAge: 30000,
-            timeout: 27000,
-          });
-        }
-      }
-
-      const handleOrientationEvent = (alpha, beta, gamma) => {
-        const rotateDegrees = alpha; // alpha: rotation around z-axis
-        const frontToBack = beta; // beta: front back motion
-        const leftToRight = gamma; // gamma: left to right
-
-        frontToBackEl.textContent = `frontToBack: ${frontToBack}`;
-        leftToRightEl.textContent = `leftToRight: ${leftToRight}`;
-        rotateDegreesEl.textContent = `rotateDegrees: ${rotateDegrees}`;
-
-        latestMovement.orientationAlpha = alpha;
-        latestMovement.orientationBeta = beta;
-        latestMovement.orientationGamma = gamma;
-
-        latestMovement.timestamp = getUtcTimestamp();
-      };
-
-      const handleMotionEvent = (event) => {
-        const x = event.acceleration.x;
-        const y = event.acceleration.y;
-        const z = event.acceleration.z;
-
-        xEl.textContent = `x: ${x}`;
-        yEl.textContent = `y: ${y}`;
-        zEl.textContent = `z: ${z}`;
-
-        latestMovement.motionX = x;
-        latestMovement.motionY = y;
-        latestMovement.motionZ = z;
-
-        const timestamp = getUtcTimestamp();
-
-        latestMovement.timestamp = timestamp;
-      };
-
-      const setupDeviceOrientation = () => {
-        // from https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientation_event#examples
-        window.addEventListener(
-          "deviceorientation",
-          (event) => {
-            handleOrientationEvent(event.alpha, event.beta, event.gamma);
-          },
-          true
-        );
-      };
-
-      const setupDeviceMotion = () => {
-        window.addEventListener("devicemotion", handleMotionEvent, true);
-      };
-
-      const initializeSensorApis = async () => {
-        // todo handle error case
-        if ("DeviceMotionEvent" in window) {
-          if (typeof DeviceMotionEvent.requestPermission !== "function") {
-            // try to initialize without requesting permission
-            setupDeviceMotion();
-          } else {
-            // ask nicely
-            const permissionResponse =
-              await DeviceMotionEvent?.requestPermission();
-            if (permissionResponse === "granted") {
-              setupDeviceMotion();
-            }
-          }
-        }
-
-        if ("DeviceOrientationEvent" in window) {
-          if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-            // try to initialize without requesting permission
-            setupDeviceOrientation();
-          } else {
-            // ask nicely
-            const permissionResponse =
-              await DeviceOrientationEvent.requestPermission();
-            if (permissionResponse === "granted") {
-              setupDeviceOrientation();
-            }
-          }
-        }
-
-        geoFindMe();
-
-        // start sending latest movement via socket to server
-        const interval = setInterval(sendLatestMovement, 200);
-      };
 
       // when the start button is clicked, initialize all the sensors and start Tone
       document.querySelector("#start").addEventListener(
