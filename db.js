@@ -1,6 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
 
-const dbPath = "/Users/ashlinaronin/Development/sqlite/spatial.db";
+const dbPath = process.env.SQLITE_DB_PATH || "/Users/ashlinaronin/Development/sqlite/spatial.db";
 
 const registerUser = (userId, teamId, fileId, filePath) => {
   let db = new sqlite3.Database(dbPath);
