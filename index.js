@@ -101,7 +101,7 @@ const init = async () => {
 
       const uploadName = request.payload.file.filename;
       const uploadPath = request.payload.file.path;
-      const destination = path.join(__dirname, "lib/uploads", uploadName);
+      const destination = path.join(__dirname, "public/uploads", uploadName);
       console.log("destination", destination);
 
       console.log(
@@ -123,7 +123,7 @@ const init = async () => {
         output: "file",
         parse: true,
         multipart: true,
-        uploads: path.join(__dirname, "lib/uploads"),
+        uploads: path.join(__dirname, "public/uploads"),
       },
     },
   });
