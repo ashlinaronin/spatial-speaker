@@ -25,6 +25,7 @@
         initializeSensorApis,
       } from "./lib/sensors.js";
       import { getClientId } from "./lib/getClientId.js";
+      import setupDualResonator from "./lib/dual-resonator.js";
 
       // collect all the elements we'll need to refer to
       const status = document.querySelector("#status");
@@ -43,12 +44,9 @@
         true
       );
 
-      const player = new Tone.Player(
-        "https://tonejs.github.io/audio/berklee/gong_1.mp3"
-      ).toDestination();
-      var sine = new Tone.Oscillator(440, "sine").toDestination();
-
-      Tone.loaded().then(async () => {});
+      Tone.loaded().then(async () => {
+        setupDualResonator();
+      });
     </script>
   </body>
 </html>
