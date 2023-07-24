@@ -7,12 +7,12 @@ import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 const recordButton = document.querySelector(".record");
 const nextButton = document.querySelector(".next");
 const soundClips = document.querySelector(".sound-clips");
-const sensorPageLink = document.querySelector(".sensor-page-link");
+const resonatorPageLink = document.querySelector(".resonator-page-link");
 
 let recordings = [];
 let recording = false;
 const clientId = self.crypto.randomUUID();
-sensorPageLink.href = `sensor.html?clientId=${clientId}`;
+resonatorPageLink.href = `resonator.html?clientId=${clientId}`;
 
 const registerUser = async function () {
   const selectedTeamId = document.querySelector(
