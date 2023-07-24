@@ -102,6 +102,7 @@ const init = async () => {
       const uploadName = request.payload.file.filename;
       const uploadPath = request.payload.file.path;
       const destination = path.join(__dirname, "lib/uploads", uploadName);
+      console.log("destination", destination);
 
       console.log(
         `received file for clientId ${clientId} with uploadName ${uploadName}`
