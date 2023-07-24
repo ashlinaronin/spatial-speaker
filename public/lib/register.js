@@ -12,7 +12,7 @@ const sensorPageLink = document.querySelector(".sensor-page-link");
 let recordings = [];
 let recording = false;
 const clientId = self.crypto.randomUUID();
-sensorPageLink.href = `/sensor.html?clientId=${clientId}`;
+sensorPageLink.href = `sensor.html?clientId=${clientId}`;
 
 const registerUser = async function () {
   const selectedTeamId = document.querySelector(
