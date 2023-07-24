@@ -19,7 +19,7 @@ const sendLatestMovement = () => {
   socket.emit("movement", latestMovement);
 };
 
-const getLatestMovement = () => latestMovement;
+export const getLatestMovement = () => latestMovement;
 
 const getUtcTimestamp = () => new Date().getTime();
 
