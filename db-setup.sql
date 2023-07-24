@@ -3,7 +3,7 @@ CREATE TABLE team (
     symbol TEXT,
 );
 
-INSERT INTO team(teamid, symbol)
+INSERT INTO team(teamId, symbol)
 VALUES (1, "earth"), (2, "wind"), (3, "fire"), (4, "water");
 
 
