@@ -5,7 +5,7 @@ import scale from "./scale.js";
 let player;
 let latestMovement;
 
-const ACCEL_LOW_INPUT = -10;
+const ACCEL_LOW_INPUT = 0;
 const ACCEL_HI_INPUT = 10;
 const SENSOR_READ_MS = 200;
 const RAMP_TIME = SENSOR_READ_MS / 1000 / 2;
@@ -66,7 +66,7 @@ export const setupDualResonator = () => {
     latestMovement = getLatestMovement();
 
     const newFilterCutOffOne = scale(
-      latestMovement.motionX,
+      Math.abs(latestMovement.motionX),
       ACCEL_LOW_INPUT,
       ACCEL_HI_INPUT,
       FILTER_LOW_FREQ,
@@ -75,7 +75,7 @@ export const setupDualResonator = () => {
     lowResOne.frequency.linearRampTo(newFilterCutOffOne, RAMP_TIME);
 
     const newPlaybackRate = scale(
-      latestMovement.motionY,
+      Math.abs(latestMovement.motionY),
       ACCEL_LOW_INPUT,
       ACCEL_HI_INPUT,
       PLAYBACK_RATE_LOW,
