@@ -5,7 +5,14 @@ import scale from "./scale.js";
 let player;
 let latestMovement;
 
+const ACCEL_LOW_INPUT = -10;
+const ACCEL_HI_INPUT = 10;
 const SENSOR_READ_MS = 200;
+const RAMP_TIME = SENSOR_READ_MS / 1000 / 2;
+const FILTER_LOW_FREQ = 2000;
+const FILTER_HI_FREQ = 12000;
+const PLAYBACK_RATE_LOW = 1.0;
+const PLAYBACK_RATE_HI = 20.0;
 
 export const setupDualResonator = () => {
   const clientId = getClientId();
@@ -52,12 +59,28 @@ export const setupDualResonator = () => {
   crossFade.toDestination();
 
   // * drive parameters based on mvmt
+  // if this device doesn't have motionX then don't even set up the interval for driving params
+  //   if (!latestMovement?.motionX) return;
+
   const sensorReadInterval = setInterval(() => {
     latestMovement = getLatestMovement();
-    const newFilterCutOffOne = scale(latestMovement.motionX, -10, 10, 2000, 12000);
-    lowResOne.frequency.linearRampTo(newFilterCutOffOne, 0.1);
 
-    const newPlaybackRate = scale(latestMovement.motionY, -10, 10, 1.0, 20.0);
+    const newFilterCutOffOne = scale(
+      latestMovement.motionX,
+      ACCEL_LOW_INPUT,
+      ACCEL_HI_INPUT,
+      FILTER_LOW_FREQ,
+      FILTER_HI_FREQ
+    );
+    lowResOne.frequency.linearRampTo(newFilterCutOffOne, RAMP_TIME);
+
+    const newPlaybackRate = scale(
+      latestMovement.motionY,
+      ACCEL_LOW_INPUT,
+      ACCEL_HI_INPUT,
+      PLAYBACK_RATE_LOW,
+      PLAYBACK_RATE_HI
+    );
     player.playbackRate = newPlaybackRate;
   }, SENSOR_READ_MS);
 };
