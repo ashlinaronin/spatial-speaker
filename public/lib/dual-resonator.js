@@ -1,6 +1,8 @@
 import { getClientId } from "./getClientId.js";
 
-const setupDualResonator = () => {
+let player;
+
+export const setupDualResonator = () => {
   const clientId = getClientId();
   const nameSampleUrl = `uploads/${clientId}_RECORD_NAME.ogg`;
   const filterCutoffOne = 6000;
@@ -8,7 +10,7 @@ const setupDualResonator = () => {
   const filterCutoffTwo = filterCutoffOne * filterCuttoffRatio;
 
   // loop timestretched sample
-  const player = new Tone.GrainPlayer(nameSampleUrl, () => {
+  player = new Tone.GrainPlayer(nameSampleUrl, () => {
     player.loop = true;
     // note for slow rates need to increase overlap to get realistic result
     player.playbackRate = 3;
@@ -33,7 +35,7 @@ const setupDualResonator = () => {
   lowResOne.connect(combinedFilter);
   lowResTwo.connect(combinedFilter.subtrahend);
   combinedFilter.connect(reverb);
-//   reverb.toDestination();
+  //   reverb.toDestination();
 
   // * create dry/wet fader to resonated/reverb version
   const crossFade = new Tone.CrossFade();
@@ -47,4 +49,6 @@ const setupDualResonator = () => {
   // * drive parameters based on mvmt
 };
 
-export default setupDualResonator;
+export const stopPlayer = () => {
+  player.stop();
+};

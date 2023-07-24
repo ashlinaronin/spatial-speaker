@@ -6,6 +6,7 @@
   <body>
     <h1>spatial speaker: resonator</h1>
     <button id="start">start</button>
+    <button id="stop">stop</button>
     <p id="status"></p>
     <p id="client-id"></p>
 
@@ -25,7 +26,7 @@
         initializeSensorApis,
       } from "./lib/sensors.js";
       import { getClientId } from "./lib/getClientId.js";
-      import setupDualResonator from "./lib/dual-resonator.js";
+      import { setupDualResonator, stopPlayer } from "./lib/dual-resonator.js";
 
       // collect all the elements we'll need to refer to
       const status = document.querySelector("#status");
@@ -43,6 +44,9 @@
         },
         true
       );
+
+      // when the stop button is clicked, stop the sample player
+      document.querySelector("#stop").addEventListener("click", stopPlayer, true);
 
       Tone.loaded().then(async () => {
         setupDualResonator();
