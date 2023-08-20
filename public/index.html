@@ -15,7 +15,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>~welcome to the wave~ <span class="phase">0/3</span></h1>
+        <h1>~welcome to the wave~ <span class="phase">0/2</span></h1>
       </header>
 
       <section class="phase phase-0">
@@ -45,11 +45,7 @@
         <p>Who are you?</p>
         <p>What's in a name?</p>
       </section>
-      <section class="phase phase-2 hidden">
-        <p>Progress isn't linear. Neither is time.</p>
-        <p>Make a sudden sound.</p>
-      </section>
-      <section class="main-controls phase phase-1 phase-2 hidden">
+      <section class="main-controls phase phase-1 hidden">
         <canvas class="visualizer" height="60px" width="100%"></canvas>
         <div class="buttons">
           <button class="record">record</button>
@@ -60,17 +56,8 @@
       <div class="buttons">
         <button class="next phase-0">next</button>
         <!-- note: href gets set programatically in order to add clientId -->
-        <a class="resonator-page-link button phase-3 hidden">you may enter</a>
+        <a class="resonator-page-link button phase-2 hidden">you may enter</a>
       </div>
-
-      <!--
-      <section class="breadcrumbs">
-        <span class="phase-0 phase-1 phase-2 phase-3">fundamental</span>
-        <span class="phase-1 phase-2 phase-3 hidden">name</span>
-        <span class="phase-2 phase-3 hidden">perc</span>
-        <span class="phase-3 hidden">upload</span>
-      </section>
-      -->
     </div>
     <script src="lib/register.js" type="module"></script>
   </body>
