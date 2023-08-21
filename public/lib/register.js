@@ -3,12 +3,12 @@ import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 
 const recordButton = document.querySelector(".record");
 const soundClips = document.querySelector(".sound-clips");
-const resonatorPageLink = document.querySelector(".resonator-page-link");
+const nextPageLink = document.querySelector(".next-page-link");
 
 let recordings = [];
 let recording = false;
 const clientId = self.crypto.randomUUID();
-resonatorPageLink.href = `resonator.html?clientId=${clientId}`;
+nextPageLink.href = `sequencer.html?clientId=${clientId}`;
 
 const registerUser = async function () {
   // todo: url config for deployment
