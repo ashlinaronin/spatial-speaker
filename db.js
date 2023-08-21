@@ -1,9 +1,24 @@
 const sqlite3 = require("sqlite3").verbose();
 
-const dbPath = process.env.SQLITE_DB_PATH || "/Users/ashlinaronin/Development/sqlite/spatial.db";
+const dbPath =
+  process.env.SQLITE_DB_PATH ||
+  "/Users/ashlinaronin/Development/sqlite/spatial.db";
 console.log("dbPath", dbPath);
 
-const registerUser = (userId, teamId, fileId, filePath) => {
+const getUser = async (userId) => {
+  return new Promise((resolve, reject) => {
+    let db = new sqlite3.Database(dbPath);
+
+    db.get(`SELECT * FROM user WHERE userId = "${userId}"`, (err, userRow) => {
+      console.log("error", err);
+      if (err) reject(err);
+      resolve(userRow);
+      db.close();
+    });
+  });
+};
+
+const registerUser = (userId, teamId) => {
   let db = new sqlite3.Database(dbPath);
 
   db.get(`SELECT * FROM user WHERE userId = "${userId}"`, (err, userRow) => {
@@ -34,6 +49,7 @@ const addRecording = (userId, fileId, filePath) => {
 };
 
 module.exports = {
+  getUser,
   registerUser,
   addRecording,
 };

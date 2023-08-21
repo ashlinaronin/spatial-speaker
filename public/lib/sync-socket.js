@@ -14,7 +14,8 @@ const getTimeFunction = () => Tone.now();
 // init sync client
 const syncClient = new SyncClient(getTimeFunction);
 
-let connectedClientIds = [];
+let connectedClients = [];
+const clientChangeListeners = [];
 
 const sendFunction = (pingId, clientPingTime) => {
   socket.emit("ircam", { isPing: true, pingId, clientPingTime });
@@ -40,9 +41,24 @@ socket.on("connect", () => {
   syncClient.start(sendFunction, receiveFunction, statusFunction);
 });
 
-socket.on("connectedClientIds", (newIds) => {
-  console.log("connectedClientIds from server", newIds);
-  connectedClientIds = newIds;
+socket.on("connectedClients", (newClients) => {
+  console.log("connectedClients from server", newClients);
+  connectedClients = newClients;
+
+  clientChangeListeners.forEach((listener) => {
+    listener(newClients);
+  });
 });
 
-export { socket, syncClient, connectedClientIds };
+const registerClientChangeListener = (callback) => {
+  if (typeof callback === "function") {
+    clientChangeListeners.push(callback);
+  }
+};
+
+export {
+  socket,
+  syncClient,
+  connectedClients,
+  registerClientChangeListener,
+};

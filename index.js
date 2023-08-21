@@ -5,7 +5,7 @@ const Joi = require("@hapi/joi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
 const { SyncServer } = require("@ircam/sync");
-const { registerUser, addRecording } = require("./db");
+const { registerUser, addRecording, getUser } = require("./db");
 const registerNetHandlers = require("./register-net-handlers");
 const registerMovementHandlers = require("./register-movement-handlers");
 const registerSyncHandlers = require("./register-sync-handlers");
@@ -18,9 +18,24 @@ const getTimeFunction = () => {
 const syncServer = new SyncServer(getTimeFunction);
 
 // track team ids we're assigning to make them sequential
+const NUMBER_OF_TEAMS = 4;
 let currentTeamId = 0;
 
-const connectedClientIds = [];
+const connectedClients = [];
+const addClientToList = async (clientId) => {
+  // we don't know this user's teamId yet, so we have to fetch them from the db first
+  const user = await getUser(clientId);
+  const teamId = user.teamId;
+  connectedClients.push({ clientId, teamId });
+};
+const removeClientFromList = (clientId) => {
+  const clientIndex = connectedClients.findIndex(
+    (client) => client.clientId === clientId
+  );
+  if (clientIndex > -1) {
+    connectedClients.splice(clientIndex, 1);
+  }
+};
 
 const init = async () => {
   const server = Hapi.server({
@@ -76,7 +91,7 @@ const init = async () => {
     handler: async function (request, h) {
       const { clientId } = request.payload;
       const teamId = currentTeamId;
-      currentTeamId++;
+      currentTeamId = (currentTeamId + 1) % NUMBER_OF_TEAMS;
 
       console.log(`registering clientId ${clientId} with team ${teamId}`);
       registerUser(clientId, teamId);
@@ -127,22 +142,19 @@ const init = async () => {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
     console.log(`clientId ${clientId} joined`);
     registerSyncHandlers(io, socket, syncServer);
     registerNetHandlers(io, socket, syncServer);
     registerMovementHandlers(io, socket);
-    connectedClientIds.push(clientId);
-    io.emit("connectedClientIds", connectedClientIds);
+    await addClientToList(clientId);
+    io.emit("connectedClients", connectedClients);
 
     socket.on("disconnect", () => {
-      const clientIdIndex = connectedClientIds.indexOf(socket.handshake.query.clientId);
-      if (clientIdIndex > -1) {
-        connectedClientIds.splice(clientIdIndex, 1);
-      }
-      io.emit("connectedClientIds", connectedClientIds);
-    })
+      removeClientFromList(socket.handshake.query.clientId);
+      io.emit("connectedClients", connectedClients);
+    });
   });
 
   await server.start();
