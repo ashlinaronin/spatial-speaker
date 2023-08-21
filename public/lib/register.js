@@ -1,11 +1,7 @@
-// import WaveSurfer from "https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js";
-// import Spectrogram from "https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js";
-
 import { visualize } from "./visualizer.js";
 import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 
 const recordButton = document.querySelector(".record");
-const nextButton = document.querySelector(".next");
 const soundClips = document.querySelector(".sound-clips");
 const resonatorPageLink = document.querySelector(".resonator-page-link");
 
@@ -43,28 +39,6 @@ const onGumSuccess = function (stream) {
     recordings.push({ clipName, blob });
     chunks = [];
 
-    // // Create an instance of WaveSurfer
-    // const ws = WaveSurfer.create({
-    //   container: `#${clipContainer.id}`,
-    //   waveColor: "rgb(200, 0, 200)",
-    //   progressColor: "rgb(100, 0, 100)",
-    //   url: audioURL,
-    //   sampleRate: 22050,
-    // });
-
-    // // Initialize the Spectrogram plugin
-    // ws.registerPlugin(
-    //   Spectrogram.create({
-    //     labels: true,
-    //     height: 256,
-    //   })
-    // );
-
-    // // Play on click
-    // ws.once("interaction", () => {
-    //   ws.play();
-    // });
-
     // after the recording has been made, transition to next phase
     // this allows us to allow the user to only use one button instead of making them click stop _and_ next
     transitionToNextPhase();
@@ -92,17 +66,11 @@ const onGumSuccess = function (stream) {
   const transitionToNextPhase = async () => {
     nextPhase();
 
-    recordButton.textContent = `record ${getPhaseFriendlyName()}`;
-
     if (getPhase().value === PHASES.UPLOAD.value) {
       await registerUser();
       await uploadRecordings();
     }
   };
-
-  // nextButton.onclick = async function () {
-  //   transitionToNextPhase();
-  // };
 
   recordButton.onclick = function () {
     if (recording) {
