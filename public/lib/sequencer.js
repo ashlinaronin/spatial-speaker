@@ -3,31 +3,44 @@ import { registerClientChangeListener } from "./sync-socket.js";
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const TOTAL_STEPS = 16;
+const NUM_TEAMS = 4;
 const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
 const PLAYBACK_RATE = 3.0; // note for slow rates need to increase overlap to get realistic result
 
 const players = {};
 let currentStepIndex = 0;
-// todo: generate dynamically
-// rn they correspond to the teamId
-const steps = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3];
+const steps = Array(16)
+  .fill(null)
+  .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
 // will have to add some listeners so that when new ppl connect and disconnect the seqs get updated
 const onConnectedClientsChange = (newClients) => {
   console.log("newClients in sequencer", newClients);
 
+  const thisClientId = getClientId();
+  const thisClient = newClients.find(
+    (client) => client.clientId === thisClientId
+  );
+  const thisTeamId = thisClient.teamId;
+
+  // pick 4 clients for this team for the appropriate beats
+  // later decide how to handle more than 16 ppl
+  const newClientsWithMatchingTeamId = newClients
+    .filter((client) => client.teamId === thisTeamId)
+    .slice(0, 4);
+  const stepsToUpdate = steps.filter((step) => step.teamId === thisTeamId);
+
   // create data structure to hold steps and fill with player for each step
-  newClients.forEach(({ clientId, teamId }) => {
-    // if this team doesnt have a sample player yet, make one
-    // later we will figure out what to do with more than one person per team
-    if (!players[teamId]) {
+  newClientsWithMatchingTeamId.forEach(({ clientId }, index) => {
+    const step = stepsToUpdate[index];
+
+    if (!step.player) {
       const nameSampleUrl = `uploads/${clientId}_RECORD_NAME.ogg`;
       const player = new Tone.GrainPlayer(nameSampleUrl, () => {
         player.playbackRate = PLAYBACK_RATE;
       });
       player.toDestination();
-
-      players[teamId] = player;
+      step.player = player;
     }
   });
 };
@@ -37,14 +50,13 @@ registerClientChangeListener(onConnectedClientsChange);
 export const setupSequencer = () => {
   // callback that will execute repeatedly when called by Tone
   const repeat = (time) => {
-    const currentStepTeamId = steps[currentStepIndex];
-    const player = players[currentStepTeamId];
-    if (!!player) {
+    const step = steps[currentStepIndex];
+    if (!!step.player) {
       // early return if not loaded yet
-      if (!player.loaded) return;
+      if (!step.player.loaded) return;
 
       // play sample for a 16th note
-      player.start(time, SAMPLE_OFFSET, "16n");
+      step.player.start(time, SAMPLE_OFFSET, "16n");
     }
 
     // increment step index
