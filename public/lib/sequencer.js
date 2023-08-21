@@ -3,9 +3,11 @@ import { getClientId } from "./getClientId.js";
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const TOTAL_STEPS = 16;
 
+const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
+
 // todo eventually use other ppls sounds too
 export const setupSequencer = () => {
-  Tone.Transport.bpm.value = 60;
+  Tone.Transport.bpm.value = 40;
 
   // create data structure to hold steps and fill with player for each step
   const clientId = getClientId();
@@ -36,8 +38,8 @@ export const setupSequencer = () => {
         // early return if not loaded yet
         if (!currentStep.player.loaded) return;
 
-        // if loaded, play
-        currentStep.player.start(time, null, "8n");
+        // play sample for a 16th note
+        currentStep.player.start(time, SAMPLE_OFFSET, "16n");
       }
 
       // increment step index
