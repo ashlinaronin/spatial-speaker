@@ -9,6 +9,8 @@ const getTimeFunction = () => Tone.now();
 // init sync client
 const syncClient = new SyncClient(getTimeFunction);
 
+let connectedClients = [];
+
 socket.on("connect", () => {
   const sendFunction = (pingId, clientPingTime) => {
     socket.emit("ircam", { isPing: true, pingId, clientPingTime });
@@ -31,6 +33,8 @@ socket.on("connect", () => {
   const statusFunction = (status) => console.log(status);
   // start synchronization process
   syncClient.start(sendFunction, receiveFunction, statusFunction);
+
+  
 });
 
 // monitor the synchronized clock
@@ -39,4 +43,4 @@ socket.on("connect", () => {
 //     // console.log(syncTime);
 // }, 100);
 
-export { socket, syncClient };
+export { socket, syncClient, connectedClients };
