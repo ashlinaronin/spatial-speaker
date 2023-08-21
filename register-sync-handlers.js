@@ -1,4 +1,4 @@
-module.exports = (socket, io, syncServer) => {
+module.exports = (io, socket, syncServer) => {
   // the `receiveFunction` and `sendFunction` functions aim at abstracting
   // the transport layer between the SyncServer and the SyncClient
   const receiveFunction = (callback) => {

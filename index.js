@@ -15,11 +15,12 @@ const getTimeFunction = () => {
   const now = process.hrtime(startTime);
   return now[0] + now[1] * 1e-9;
 };
-
 const syncServer = new SyncServer(getTimeFunction);
 
 // track team ids we're assigning to make them sequential
 let currentTeamId = 0;
+
+const connectedClientIds = [];
 
 const init = async () => {
   const server = Hapi.server({
@@ -127,9 +128,21 @@ const init = async () => {
   });
 
   io.on("connection", (socket) => {
+    const clientId = socket.handshake.query.clientId;
+    console.log(`clientId ${clientId} joined`);
     registerSyncHandlers(io, socket, syncServer);
     registerNetHandlers(io, socket, syncServer);
     registerMovementHandlers(io, socket);
+    connectedClientIds.push(clientId);
+    io.emit("connectedClientIds", connectedClientIds);
+
+    socket.on("disconnect", () => {
+      const clientIdIndex = connectedClientIds.indexOf(socket.handshake.query.clientId);
+      if (clientIdIndex > -1) {
+        connectedClientIds.splice(clientIdIndex, 1);
+      }
+      io.emit("connectedClientIds", connectedClientIds);
+    })
   });
 
   await server.start();

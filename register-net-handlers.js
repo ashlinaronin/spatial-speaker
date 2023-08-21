@@ -3,6 +3,4 @@ module.exports = (io, socket, syncServer) => {
     console.log("received gong msg, emitting");
     io.emit("gong", { serverTime: syncServer.getSyncTime() + 2 });
   });
-
-  // todo add way to get all current clientIds
 };
