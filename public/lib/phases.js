@@ -1,5 +1,4 @@
 export const PHASES = {
-  SELECT_TEAM: { friendlyName: "team", value: "SELECT_TEAM" },
   RECORD_NAME: { friendlyName: "name", value: "RECORD_NAME" },
   UPLOAD: { friendlyName: "upload", value: "UPLOAD" },
 };

@@ -22,8 +22,10 @@ const BUFFER_CLEANUP_MS = EVENT_BUFFER_LENGTH * REFRESH_RATE;
 
 const getUtcTimestamp = () => new Date().getTime();
 
-//
 const syncServer = new SyncServer(getTimeFunction);
+
+// track team ids we're assigning to make them sequential
+let currentTeamId = 0;
 
 const init = async () => {
   const server = Hapi.server({
@@ -77,7 +79,10 @@ const init = async () => {
     method: "POST",
     path: "/register",
     handler: async function (request, h) {
-      const { clientId, teamId } = request.payload;
+      const { clientId } = request.payload;
+      const teamId = currentTeamId;
+      currentTeamId++;
+
       console.log(`registering clientId ${clientId} with team ${teamId}`);
       registerUser(clientId, teamId);
 
@@ -87,7 +92,6 @@ const init = async () => {
       validate: {
         payload: Joi.object({
           clientId: Joi.string(),
-          teamId: Joi.number(),
         }),
       },
     },

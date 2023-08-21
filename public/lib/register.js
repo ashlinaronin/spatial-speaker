@@ -1,5 +1,5 @@
-import WaveSurfer from "https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js";
-import Spectrogram from "https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js";
+// import WaveSurfer from "https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js";
+// import Spectrogram from "https://unpkg.com/wavesurfer.js@7/dist/plugins/spectrogram.esm.js";
 
 import { visualize } from "./visualizer.js";
 import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
@@ -15,15 +15,11 @@ const clientId = self.crypto.randomUUID();
 resonatorPageLink.href = `resonator.html?clientId=${clientId}`;
 
 const registerUser = async function () {
-  const selectedTeamId = document.querySelector(
-    "input[name=team]:checked"
-  ).value;
-
   // todo: url config for deployment
   await fetch(`register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ clientId, teamId: Number(selectedTeamId) }),
+    body: JSON.stringify({ clientId }),
   });
 };
 
@@ -98,18 +94,15 @@ const onGumSuccess = function (stream) {
 
     recordButton.textContent = `record ${getPhaseFriendlyName()}`;
 
-    if (getPhase().value === PHASES.RECORD_NAME.value) {
-      await registerUser();
-    }
-
     if (getPhase().value === PHASES.UPLOAD.value) {
+      await registerUser();
       await uploadRecordings();
     }
   };
 
-  nextButton.onclick = async function () {
-    transitionToNextPhase();
-  };
+  // nextButton.onclick = async function () {
+  //   transitionToNextPhase();
+  // };
 
   recordButton.onclick = function () {
     if (recording) {

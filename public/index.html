@@ -15,37 +15,17 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>~welcome to the wave~ <span class="phase">0/2</span></h1>
+        <h1>~the gift~</h1>
       </header>
 
       <section class="phase phase-0">
         <p>Listen.</p>
         <p>You begin to synchronize with the cosmic resonance.</p>
         <p>You find solace in the path.</p>
-      </section>
-      <section class="phase phase-0">
-        <fieldset>
-          <legend>Select fundamental</legend>
-          <div>
-            <input type="radio" id="earth" name="team" value="1" checked />
-            <label for="earth">🪨 Earth</label>
-
-            <input type="radio" id="water" name="team" value="2" />
-            <label for="water">🌊 Water</label>
-
-            <input type="radio" id="air" name="team" value="3" />
-            <label for="air">☁️ Air</label>
-
-            <input type="radio" id="fire" name="team" value="4" />
-            <label for="fire">🔥 Fire</label>
-          </div>
-        </fieldset>
-      </section>
-      <section class="phase phase-1 hidden">
         <p>Who are you?</p>
         <p>What's in a name?</p>
       </section>
-      <section class="main-controls phase phase-1 hidden">
+      <section class="main-controls phase phase-0">
         <canvas class="visualizer" height="60px" width="100%"></canvas>
         <div class="buttons">
           <button class="record">record</button>
@@ -54,9 +34,8 @@
       <section class="sound-clips"></section>
 
       <div class="buttons">
-        <button class="next phase-0">next</button>
         <!-- note: href gets set programatically in order to add clientId -->
-        <a class="resonator-page-link button phase-2 hidden">you may enter</a>
+        <a class="resonator-page-link button phase-1 hidden">you may enter</a>
       </div>
     </div>
     <script src="lib/register.js" type="module"></script>
