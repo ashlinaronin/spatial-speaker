@@ -1,5 +1,9 @@
 import { getClientId } from "./getClientId.js";
-import { syncClient, registerClientChangeListener } from "./sync-socket.js";
+import {
+  socket,
+  syncClient,
+  registerClientChangeListener,
+} from "./sync-socket.js";
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const TOTAL_STEPS = 16;
@@ -21,6 +25,10 @@ const onConnectedClientsChange = (newClients) => {
     (client) => client.clientId === thisClientId
   );
   const thisTeamId = thisClient.teamId;
+
+  // todo do this on load instead of here?
+  const teamIdEl = document.querySelector("#team-id");
+  teamIdEl.textContent = `teamId: ${thisTeamId}`;
 
   // pick 4 clients for this team for the appropriate beats
   // later decide how to handle more than 16 ppl
@@ -50,38 +58,36 @@ export const setupSequencer = () => {
     "./lib/268822__kwahmah_02__woodblock.wav"
   ).toDestination();
 
-  // callback that will execute repeatedly when called by Tone
-  const repeat = (time) => {
-    const localTime = syncClient.getLocalTime();
-    const syncTime = syncClient.getSyncTime(localTime);
+  socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
+    console.log(
+      `received tick event with beatDivisionNumber ${beatDivisionNumber} and serverTime ${serverTime}`
+    );
 
-    const offset = syncTime - localTime;
+    const localTime = syncClient.getLocalTime();
+    const syncTime = syncClient.getSyncTime();
+    const timeToPlay = syncClient.getLocalTime(serverTime);
+
+    console.log("serverTime from event", serverTime);
     console.log("localTime", localTime);
     console.log("syncTime", syncTime);
-    console.log("offset", offset);
-    console.log("repeatTime", time);
-    console.log("repeatTime + offset", time + offset);
+    console.log("timeToPlay", timeToPlay);
 
-    const step = steps[currentStepIndex];
+    const step = steps[beatDivisionNumber];
     if (!!step.player) {
       // early return if not loaded yet
       if (!step.player.loaded) return;
 
       // play sample for a 16th note
-      step.player.start(time, SAMPLE_OFFSET, "16n");
+      step.player.start(timeToPlay, SAMPLE_OFFSET, "16n");
     } else {
       // play metronome on non-occupied beats, for debugging. remove eventually
       if (!metronome.loaded) return;
-      metronome.start(time, null, "16n");
+      metronome.start(timeToPlay, null, "16n");
     }
-
-    // increment step index
-    currentStepIndex = (currentStepIndex + 1) % TOTAL_STEPS;
-  };
+  });
 
   Tone.Transport.bpm.value = 40;
   Tone.Transport.start();
-  Tone.Transport.scheduleRepeat(repeat, "8n");
 };
 
 export const stopSequencer = () => {
