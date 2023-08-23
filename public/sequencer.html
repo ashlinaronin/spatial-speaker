@@ -9,6 +9,7 @@
     <button id="stop">stop</button>
     <p id="status"></p>
     <p id="client-id"></p>
+    <p id="team-id"></p>
 
     <script
       type="text/javascript"
@@ -41,16 +42,16 @@
         async () => {
           await initializeSensorApis();
           await Tone.start();
+
+          // wait for sync to init
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          setupSequencer();
         },
         true
       );
 
       // when the stop button is clicked, stop the sample player
       document.querySelector("#stop").addEventListener("click", stopSequencer, true);
-
-      Tone.loaded().then(async () => {
-        setupSequencer();
-      });
     </script>
   </body>
 </html>
