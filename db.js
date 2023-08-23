@@ -10,7 +10,6 @@ const getUser = async (userId) => {
     let db = new sqlite3.Database(dbPath);
 
     db.get(`SELECT * FROM user WHERE userId = "${userId}"`, (err, userRow) => {
-      console.log("error", err);
       if (err) reject(err);
       resolve(userRow);
       db.close();

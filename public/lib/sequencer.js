@@ -13,7 +13,6 @@ const steps = Array(16)
   .fill(null)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
-// will have to add some listeners so that when new ppl connect and disconnect the seqs get updated
 const onConnectedClientsChange = (newClients) => {
   console.log("newClients in sequencer", newClients);
 
@@ -46,8 +45,11 @@ const onConnectedClientsChange = (newClients) => {
 };
 registerClientChangeListener(onConnectedClientsChange);
 
-// todo eventually use other ppls sounds too
 export const setupSequencer = () => {
+  const metronome = new Tone.Player(
+    "./lib/268822__kwahmah_02__woodblock.wav"
+  ).toDestination();
+
   // callback that will execute repeatedly when called by Tone
   const repeat = (time) => {
     const step = steps[currentStepIndex];
@@ -57,6 +59,10 @@ export const setupSequencer = () => {
 
       // play sample for a 16th note
       step.player.start(time, SAMPLE_OFFSET, "16n");
+    } else {
+      // play metronome on non-occupied beats, for debugging. remove eventually
+      if (!metronome.loaded) return;
+      metronome.start(time, null, "16n");
     }
 
     // increment step index
