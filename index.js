@@ -142,12 +142,35 @@ const init = async () => {
     },
   });
 
+  const tempo = 15;
+  let current16thNote = 0;
+  let futureTickTime = syncServer.getSyncTime();
+  const secondsPerBeat = 60.0 / tempo;
+
+  const advanceTick = () => {
+    futureTickTime += 0.25 * secondsPerBeat;
+    current16thNote = (current16thNote + 1) % 16;
+  };
+
+  const scheduleNote = (beatDivisionNumber, time) => {
+    console.log(`scheduling tick ${beatDivisionNumber} at`, time);
+    io.emit("tick", { beatDivisionNumber, serverTime: time });
+  };
+
+  const seqInterval = setInterval(() => {
+    // schedule further in future due to latency
+    while (futureTickTime < syncServer.getSyncTime() + 2.0) {
+      scheduleNote(current16thNote, futureTickTime);
+      advanceTick();
+    }
+  }, 50);
+
   io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
     console.log(`clientId ${clientId} joined`);
     registerSyncHandlers(io, socket, syncServer);
     registerNetHandlers(io, socket, syncServer);
-    registerMovementHandlers(io, socket);
+    registerMovementHandlers(io, socket, syncServer);
     await addClientToList(clientId);
     io.emit("connectedClients", connectedClients);
 

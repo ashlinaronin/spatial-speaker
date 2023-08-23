@@ -21,7 +21,7 @@ const cleanupStaleEvents = () => {
   });
 };
 
-const handleMovementEvent = (movementEvent, io) => {
+const handleMovementEvent = (movementEvent, io, syncServer) => {
   const {
     clientId,
     timestamp,
@@ -63,9 +63,9 @@ const handleMovementEvent = (movementEvent, io) => {
   }
 };
 
-module.exports = (io, socket) => {
+module.exports = (io, socket, syncServer) => {
   socket.on("movement", (movementEvent) =>
-    handleMovementEvent(movementEvent, io)
+    handleMovementEvent(movementEvent, io, syncServer)
   );
   setInterval(cleanupStaleEvents, BUFFER_CLEANUP_MS);
 };

@@ -1,5 +1,5 @@
 import { getClientId } from "./getClientId.js";
-import { registerClientChangeListener } from "./sync-socket.js";
+import { syncClient, registerClientChangeListener } from "./sync-socket.js";
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const TOTAL_STEPS = 16;
@@ -52,6 +52,16 @@ export const setupSequencer = () => {
 
   // callback that will execute repeatedly when called by Tone
   const repeat = (time) => {
+    const localTime = syncClient.getLocalTime();
+    const syncTime = syncClient.getSyncTime(localTime);
+
+    const offset = syncTime - localTime;
+    console.log("localTime", localTime);
+    console.log("syncTime", syncTime);
+    console.log("offset", offset);
+    console.log("repeatTime", time);
+    console.log("repeatTime + offset", time + offset);
+
     const step = steps[currentStepIndex];
     if (!!step.player) {
       // early return if not loaded yet

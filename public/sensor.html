@@ -69,6 +69,30 @@
         async () => {
           await initializeSensorApis();
           await Tone.start();
+          await Tone.Transport.start();
+
+          // wait for ircam training to start...
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+
+          socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
+            console.log(
+              `received tick event with beatDivisionNumber ${beatDivisionNumber} and serverTime ${serverTime}`
+            );
+
+            const localTime = syncClient.getLocalTime();
+            const syncTime = syncClient.getSyncTime();
+            const timeToPlay = syncClient.getLocalTime(serverTime);
+
+            console.log("serverTime from event", serverTime);
+            console.log("localTime", localTime);
+            console.log("syncTime", syncTime);
+            console.log("timeToPlay", timeToPlay);
+
+            player.start(timeToPlay, null, "16n"); // synced play, but shceduled for future so more lag inherent, and not super synced anyway
+           
+           player.start();
+            visuallyIndicateGong();
+          });
         },
         true
       );
@@ -103,7 +127,7 @@
 
           // player.start(timeToPlay); // synced play, but shceduled for future so more lag inherent, and not super synced anyway
 
-          player.start(); // for now just playing as soon as we get the msg
+          player.start(timeToPlay); // for now just playing as soon as we get the msg
           visuallyIndicateGong();
         });
       });
