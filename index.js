@@ -5,6 +5,7 @@ const Joi = require("@hapi/joi");
 const inert = require("@hapi/inert");
 const socketIo = require("socket.io");
 const { SyncServer } = require("@ircam/sync");
+const eiows = require("eiows");
 const { registerUser, addRecording, getUser } = require("./db");
 const registerNetHandlers = require("./register-net-handlers");
 const registerMovementHandlers = require("./register-movement-handlers");
@@ -48,7 +49,10 @@ const init = async () => {
     },
   });
 
-  const io = socketIo(server.listener, { path: "/spatial-socket/" });
+  const io = socketIo(server.listener, {
+    path: "/spatial-socket/",
+    wsEngine: eiows.Server,
+  });
 
   await server.register(inert);
 
