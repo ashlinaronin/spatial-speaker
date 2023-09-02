@@ -4,21 +4,32 @@
   </head>
   <body>
     <h1>spatial speaker: controller</h1>
-    <button id="gong">gong</button>
+    <p id="current-phase">current phase:</p>
+
+    <button class="phase-change" data-phase-id="0">phase 0</button>
+    <button class="phase-change" data-phase-id="1">phase 1</button>
+    <button class="phase-change" data-phase-id="2">phase 2</button>
+    <button class="phase-change" data-phase-id="3">phase 3</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script type="module">
-      import { getClientId } from "./lib/getClientId.js";
+      const socket = io("", { path: "/spatial-socket/" });
+      const phaseEl = document.getElementById("current-phase");
 
-      const socket = io("", {
-        path: "/spatial-socket/",
-        query: {
-          clientId: getClientId(),
-        },
+      socket.on("phase", ({ phaseId }) => {
+        console.log(`received new phase ${phaseId} from server`);
+        phaseEl.innerText = `current phase: ${phaseId}`;
       });
 
-      document.getElementById("gong").addEventListener("click", async () => {
-        socket.emit("gong");
-      });
+      document
+        .querySelectorAll(".phase-change")
+        .forEach((phaseChangeButton) => {
+          phaseChangeButton.addEventListener("click", () => {
+            const newPhaseId = Number(
+              phaseChangeButton.attributes["data-phase-id"].value
+            );
+            socket.emit("phase", { phaseId: newPhaseId });
+          });
+        });
     </script>
   </body>
 </html>

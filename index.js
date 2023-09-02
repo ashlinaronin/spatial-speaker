@@ -167,6 +167,14 @@ const init = async () => {
 
   io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
+
+    if (!clientId) {
+      console.log("no clientId, probably a controller. ignoring");
+      // we still want to register net handlers for controller - but we don't need movement or sync
+      registerNetHandlers(io, socket, syncServer);
+      return;
+    }
+
     console.log(`clientId ${clientId} joined`);
     registerSyncHandlers(io, socket, syncServer);
     registerNetHandlers(io, socket, syncServer);
