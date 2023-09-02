@@ -5,6 +5,8 @@ import {
   registerClientChangeListener,
 } from "./sync-socket.js";
 
+const teamIdEl = document.querySelector("#team-id");
+
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const TOTAL_STEPS = 16;
 const NUM_TEAMS = 4;
@@ -18,38 +20,45 @@ const steps = Array(16)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
 const onConnectedClientsChange = (newClients) => {
-  console.log("newClients in sequencer", newClients);
+  // wait a tick- decouple from event?
+  setTimeout(() => {
+    console.log("newClients in sequencer", newClients);
 
-  const thisClientId = getClientId();
-  const thisClient = newClients.find(
-    (client) => client.clientId === thisClientId
-  );
-  const thisTeamId = thisClient.teamId;
+    const thisClientId = getClientId();
+    const thisClient = newClients.find(
+      (client) => client.clientId === thisClientId
+    );
+    const thisTeamId = thisClient?.teamId;
 
-  // todo do this on load instead of here?
-  const teamIdEl = document.querySelector("#team-id");
-  teamIdEl.textContent = `teamId: ${thisTeamId}`;
-
-  // pick 4 clients for this team for the appropriate beats
-  // later decide how to handle more than 16 ppl
-  const newClientsWithMatchingTeamId = newClients
-    .filter((client) => client.teamId === thisTeamId)
-    .slice(0, 4);
-  const stepsToUpdate = steps.filter((step) => step.teamId === thisTeamId);
-
-  // create data structure to hold steps and fill with player for each step
-  newClientsWithMatchingTeamId.forEach(({ clientId }, index) => {
-    const step = stepsToUpdate[index];
-
-    if (!step.player) {
-      const player = new Tone.GrainPlayer({
-        url: `uploads/${clientId}_RECORD_NAME.ogg`,
-        playbackRate: PLAYBACK_RATE,
-        reverse: true
-      });
-      player.toDestination();
-      step.player = player;
+    if (!thisTeamId) {
+      console.log("this client not found in connected clients list");
+      return;
     }
+
+    // todo do this on load instead of here?
+    teamIdEl.textContent = `teamId: ${thisTeamId}`;
+
+    // pick 4 clients for this team for the appropriate beats
+    // later decide how to handle more than 16 ppl
+    const newClientsWithMatchingTeamId = newClients
+      .filter((client) => client.teamId === thisTeamId)
+      .slice(0, 4);
+    const stepsToUpdate = steps.filter((step) => step.teamId === thisTeamId);
+
+    // create data structure to hold steps and fill with player for each step
+    newClientsWithMatchingTeamId.forEach(({ clientId }, index) => {
+      const step = stepsToUpdate[index];
+
+      if (!step.player) {
+        const player = new Tone.GrainPlayer({
+          url: `uploads/${clientId}_RECORD_NAME.ogg`,
+          playbackRate: PLAYBACK_RATE,
+          reverse: true,
+        });
+        player.toDestination();
+        step.player = player;
+      }
+    });
   });
 };
 registerClientChangeListener(onConnectedClientsChange);
@@ -60,18 +69,18 @@ export const setupSequencer = () => {
   ).toDestination();
 
   socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
-    console.log(
-      `received tick event with beatDivisionNumber ${beatDivisionNumber} and serverTime ${serverTime}`
-    );
+    // console.log(
+    //   `received tick event with beatDivisionNumber ${beatDivisionNumber} and serverTime ${serverTime}`
+    // );
 
-    const localTime = syncClient.getLocalTime();
-    const syncTime = syncClient.getSyncTime();
+    // const localTime = syncClient.getLocalTime();
+    // const syncTime = syncClient.getSyncTime();
     const timeToPlay = syncClient.getLocalTime(serverTime);
 
-    console.log("serverTime from event", serverTime);
-    console.log("localTime", localTime);
-    console.log("syncTime", syncTime);
-    console.log("timeToPlay", timeToPlay);
+    // console.log("serverTime from event", serverTime);
+    // console.log("localTime", localTime);
+    // console.log("syncTime", syncTime);
+    // console.log("timeToPlay", timeToPlay);
 
     const step = steps[beatDivisionNumber];
     if (!!step.player) {
