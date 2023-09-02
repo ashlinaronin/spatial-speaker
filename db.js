@@ -21,7 +21,10 @@ const registerUser = (userId, teamId) => {
   let db = new sqlite3.Database(dbPath);
 
   db.get(`SELECT * FROM user WHERE userId = "${userId}"`, (err, userRow) => {
-    console.log("error", err);
+    if (err) {
+      console.log("error", err);
+    }
+
     // if user doesn't already exist, insert them
     if (!userRow) {
       const userStatement = db.prepare(
