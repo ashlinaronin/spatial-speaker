@@ -131,21 +131,21 @@ export const initializeSensorApis = async () => {
     }
   }
 
-  if ("DeviceOrientationEvent" in window) {
-    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-      // try to initialize without requesting permission
-      setupDeviceOrientation();
-    } else {
-      // ask nicely
-      const permissionResponse =
-        await DeviceOrientationEvent.requestPermission();
-      if (permissionResponse === "granted") {
-        setupDeviceOrientation();
-      }
-    }
-  }
+// if ("DeviceOrientationEvent" in window) {
+//   if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+//     // try to initialize without requesting permission
+//     setupDeviceOrientation();
+//   } else {
+//     // ask nicely
+//     const permissionResponse =
+//       await DeviceOrientationEvent.requestPermission();
+//     if (permissionResponse === "granted") {
+//       setupDeviceOrientation();
+//     }
+//   }
+// }
 
-  geoFindMe();
+  // geoFindMe();
 
   // start sending latest movement via socket to server
   const interval = setInterval(sendLatestMovement, 200);
