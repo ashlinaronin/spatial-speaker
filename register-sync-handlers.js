@@ -3,7 +3,7 @@ module.exports = (io, socket, syncServer) => {
   // the transport layer between the SyncServer and the SyncClient
   const receiveFunction = (callback) => {
     socket.on("ircam", ({ isPing, pingId, clientPingTime }) => {
-      console.log("received ircam", pingId, clientPingTime);
+      // console.log("received ircam", pingId, clientPingTime);
       if (isPing) {
         callback(pingId, clientPingTime);
       }
@@ -16,13 +16,13 @@ module.exports = (io, socket, syncServer) => {
     serverPingTime,
     serverPongTime
   ) => {
-    console.log(
-      "sending ircam",
-      pingId,
-      clientPingTime,
-      serverPingTime,
-      serverPongTime
-    );
+    // console.log(
+    //   "sending ircam",
+    //   pingId,
+    //   clientPingTime,
+    //   serverPingTime,
+    //   serverPongTime
+    // );
 
     socket.emit("ircam", {
       isPing: false,
