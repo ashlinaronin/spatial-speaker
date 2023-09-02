@@ -18,14 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script type="module">
       import { socket, syncClient } from "./lib/sync-socket.js";
-      import {
-        geoFindMe,
-        handleOrientationEvent,
-        handleMotionEvent,
-        setupDeviceOrientation,
-        setupDeviceMotion,
-        initializeSensorApis,
-      } from "./lib/sensors.js";
+      import { initializeSensorApis } from "./lib/sensors.js";
       import { getClientId } from "./lib/getClientId.js";
       import { setupSequencer, stopSequencer } from "./lib/sequencer.js";
 
@@ -44,14 +37,16 @@
           await Tone.start();
 
           // wait for sync to init
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 5000));
           setupSequencer();
         },
         true
       );
 
       // when the stop button is clicked, stop the sample player
-      document.querySelector("#stop").addEventListener("click", stopSequencer, true);
+      document
+        .querySelector("#stop")
+        .addEventListener("click", stopSequencer, true);
     </script>
   </body>
 </html>
