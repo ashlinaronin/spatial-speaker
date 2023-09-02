@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>spatial speaker: test harness</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <h1>spatial speaker: test harness</h1>
+    <script type="module">
+      // start with hardcoded, then eventually pull from db via api
+      const clientIds = [
+        "1457effa-d696-43bc-acc5-83a042b42018",
+        "638d5dc7-5fda-469f-9d69-69db3f9f8ddb",
+        "46d60bfd-33b2-4ba2-a317-b65c4b59542e",
+        "7e95aa39-73b0-4970-8823-ff397acc3598",
+        "188a78e9-d99d-4938-981a-1c9f8f212697",
+        "b3ab5768-2abb-4b1a-a416-50bf0548d768",
+        "52217880-ff94-4eb2-8c7f-f31d5e641d2d",
+        "1ee7392a-ab84-4ec5-9e01-278afdc79d32",
+        "9497eb74-fb1d-4253-9afc-6b77f55e0909",
+        "ac36a9d2-497b-4337-b553-fbd5a6831298",
+        "6b8de4c1-1343-4aae-82cd-3d347f3666cd",
+        "1d7fbcd1-b4ca-4047-a2f8-4e4f6b22aba4",
+        "ad39b0e9-b226-4bb4-964b-88ea4718bec6",
+        "05a393a1-1e8c-4b82-9b98-f6f6637085e1",
+        "6e85509a-74b6-4077-9eb6-34c50855112f",
+        "f265a2fc-5be9-4f13-8871-694cc57e205c",
+      ];
+
+      const createIframe = (clientId) => {
+        const iframe = document.createElement("iframe");
+        iframe.src = `sequencer.html?clientId=${clientId}`;
+        document.body.appendChild(iframe);
+      };
+
+      clientIds.forEach((clientId) => {
+        createIframe(clientId);
+      });
+    </script>
+  </body>
+</html>
