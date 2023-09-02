@@ -80,9 +80,9 @@ export const setupSequencer = () => {
       // play sample for a 16th note
       step.player.start(timeToPlay, SAMPLE_OFFSET, "16n");
     } else {
-      // play metronome on non-occupied beats, for debugging. remove eventually
-      if (!metronome.loaded) return;
-      metronome.start(timeToPlay, null, "16n");
+      // play metronome on non-occupied beats, for debugging. disabled for now
+      //   if (!metronome.loaded) return;
+      //   metronome.start(timeToPlay, null, "16n");
     }
   });
 
