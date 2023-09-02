@@ -7,7 +7,7 @@ const nextPageLink = document.querySelector(".next-page-link");
 
 let recordings = [];
 let recording = false;
-const clientId = self.crypto.randomUUID();
+const clientId = uuidv4();
 nextPageLink.href = `sequencer.html?clientId=${clientId}`;
 
 const registerUser = async function () {
