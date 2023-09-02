@@ -9,7 +9,7 @@ import {
 const TOTAL_STEPS = 16;
 const NUM_TEAMS = 4;
 const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
-const PLAYBACK_RATE = 3.0; // note for slow rates need to increase overlap to get realistic result
+const PLAYBACK_RATE = 2.0; // note for slow rates need to increase overlap to get realistic result
 
 const players = {};
 let currentStepIndex = 0;
@@ -42,9 +42,10 @@ const onConnectedClientsChange = (newClients) => {
     const step = stepsToUpdate[index];
 
     if (!step.player) {
-      const nameSampleUrl = `uploads/${clientId}_RECORD_NAME.ogg`;
-      const player = new Tone.GrainPlayer(nameSampleUrl, () => {
-        player.playbackRate = PLAYBACK_RATE;
+      const player = new Tone.GrainPlayer({
+        url: `uploads/${clientId}_RECORD_NAME.ogg`,
+        playbackRate: PLAYBACK_RATE,
+        reverse: true
       });
       player.toDestination();
       step.player = player;
