@@ -142,7 +142,7 @@ const init = async () => {
     },
   });
 
-  const tempo = 15;
+  const tempo = 30;
   let current16thNote = 0;
   let futureTickTime = syncServer.getSyncTime();
   const secondsPerBeat = 60.0 / tempo;
