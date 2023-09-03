@@ -30,7 +30,7 @@ const onConnectedClientsChange = (newClients) => {
     );
     const thisTeamId = thisClient?.teamId;
 
-    if (!thisTeamId) {
+    if (typeof thisTeamId !== "number") {
       console.log("this client not found in connected clients list");
       return;
     }
@@ -91,8 +91,8 @@ export const setupSequencer = () => {
       step.player.start(timeToPlay, SAMPLE_OFFSET, "16n");
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
-      //   if (!metronome.loaded) return;
-      //   metronome.start(timeToPlay, null, "16n");
+        //   if (!metronome.loaded) return;
+        //   metronome.start(timeToPlay, null, "16n");
     }
   });
 
