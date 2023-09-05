@@ -19,6 +19,11 @@ const steps = Array(16)
   .fill(null)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
+const compressor = new Tone.Compressor(-30, 3);
+const reverb = new Tone.Reverb(0.2);
+compressor.connect(reverb);
+reverb.toDestination();
+
 const onConnectedClientsChange = (newClients) => {
   // wait a tick- decouple from event?
   setTimeout(() => {
@@ -54,8 +59,9 @@ const onConnectedClientsChange = (newClients) => {
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
           playbackRate: PLAYBACK_RATE,
           reverse: true,
+          volume: 16
         });
-        player.toDestination();
+        player.connect(compressor);
         step.player = player;
       }
     });
@@ -63,10 +69,12 @@ const onConnectedClientsChange = (newClients) => {
 };
 registerClientChangeListener(onConnectedClientsChange);
 
-export const setupSequencer = () => {
-  const metronome = new Tone.Player(
-    "./lib/268822__kwahmah_02__woodblock.wav"
-  ).toDestination();
+export const setupSequencer = async () => {
+  // const metronome = new Tone.Player(
+  //   "./lib/268822__kwahmah_02__woodblock.wav"
+  // ).toDestination();
+
+  await reverb.ready;
 
   socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
     // console.log(
@@ -91,8 +99,8 @@ export const setupSequencer = () => {
       step.player.start(timeToPlay, SAMPLE_OFFSET, "16n");
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
-        //   if (!metronome.loaded) return;
-        //   metronome.start(timeToPlay, null, "16n");
+      //   if (!metronome.loaded) return;
+      //   metronome.start(timeToPlay, null, "16n");
     }
   });
 
