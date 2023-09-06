@@ -6,8 +6,9 @@ import {
   registerServerPhaseChangeListener,
   serverPhase,
 } from "./sync-socket.js";
-import { registerMotionListener } from "./sensors.js";
+import { getLatestMovement } from "./sensors.js";
 import { serverPhaseArray } from "./serverPhaseNameMap.js";
+import scale from "./scale.js";
 
 const teamIdEl = document.querySelector("#team-id");
 
@@ -19,6 +20,9 @@ const steps = Array(16)
   .fill(null)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
+// keep one var for performance
+let latestMovement;
+
 // set up basic signal chain
 const compressor = new Tone.Compressor(-30, 3);
 const reverb = new Tone.Reverb(0.2);
@@ -27,6 +31,8 @@ reverb.toDestination();
 
 let phaseMapping = serverPhaseArray.find((p) => p.index === serverPhase);
 const onServerPhaseChange = (newServerPhase) => {
+  if (newServerPhase === phaseMapping.index) return; // don't do unnecessary work every time the phase is broadcast
+
   // update cached phaseMapping
   phaseMapping = serverPhaseArray.find((p) => p.index === newServerPhase);
 
@@ -72,7 +78,7 @@ const onConnectedClientsChange = (newClients) => {
       if (!step.player) {
         const player = new Tone.GrainPlayer({
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
-          volume: 16,
+          volume: 20,
           playbackRate: phaseMapping.playbackRate,
           grainSize: phaseMapping.grainSize,
           loop: phaseMapping.loop,
@@ -86,14 +92,56 @@ const onConnectedClientsChange = (newClients) => {
   });
 };
 
-const onMotionChange = (({x,y,z}) => {
-  console.log(`getting x ${x}, y ${y}, z ${z}`);
-}) 
+const ACCEL_LOW_INPUT = 0;
+const ACCEL_HI_INPUT = 10;
+const DETUNE_LOW = -100;
+const DETUNE_HI = 100;
+const SENSOR_READ_MS = 200;
+
+const sensorReadInterval = setInterval(() => {
+  latestMovement = getLatestMovement();
+
+  // if we don't have any movement data, don't try to map it
+  if (typeof latestMovement.motionY !== "number") return;
+
+  const newDetune = scale(
+    Math.abs(latestMovement.motionY),
+    ACCEL_LOW_INPUT,
+    ACCEL_HI_INPUT,
+    DETUNE_LOW,
+    DETUNE_HI
+  );
+  console.log("detuning to", newDetune);
+
+  steps.forEach((step) => {
+    if (step.player) {
+      step.player.detune = newDetune;
+    }
+  });
+}, SENSOR_READ_MS);
+
+// const onMotionChange = ({ x, y, z }) => {
+//   // console.log(`getting x ${x}, y ${y}, z ${z}`);
+//   const newDetune = scale(
+//     Math.abs(y),
+//     ACCEL_LOW_INPUT,
+//     ACCEL_HI_INPUT,
+//     DETUNE_LOW,
+//     DETUNE_HI
+//   );
+//   // console.log("detuning to", newDetune);
+
+//   steps.forEach((step) => {
+//     if (step.player) {
+//       step.player.detune = newDetune;
+//     }
+//   });
+// };
 
 // register listeners
 registerClientChangeListener(onConnectedClientsChange);
 registerServerPhaseChangeListener(onServerPhaseChange);
-registerMotionListener(onMotionChange);
+// registerMotionListener(onMotionChange);
 
 export const setupSequencer = async () => {
   // const metronome = new Tone.Player(
