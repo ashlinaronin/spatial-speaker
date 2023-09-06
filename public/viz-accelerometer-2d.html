@@ -67,8 +67,7 @@
     ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script type="module">
-      import { socket, syncClient } from "./lib/sync-socket.js";
-
+      const socket = io("", { path: "/spatial-socket/" });
       const ACC_THRESHOLD = 5.0;
 
       // display utc timestamps in browser local
