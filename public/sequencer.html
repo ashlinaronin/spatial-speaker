@@ -37,8 +37,10 @@
           await Tone.start();
 
           // wait for sync to init
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-          setupSequencer();
+          await new Promise((resolve) => {
+            setTimeout(resolve, 5000);
+          });
+          await setupSequencer();
         },
         true
       );

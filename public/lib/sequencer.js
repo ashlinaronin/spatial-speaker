@@ -3,6 +3,8 @@ import {
   socket,
   syncClient,
   registerClientChangeListener,
+  registerServerPhaseChangeListener,
+  serverPhase,
 } from "./sync-socket.js";
 
 const teamIdEl = document.querySelector("#team-id");
@@ -12,6 +14,18 @@ const TOTAL_STEPS = 16;
 const NUM_TEAMS = 4;
 const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
 const PLAYBACK_RATE = 2.0; // note for slow rates need to increase overlap to get realistic result
+const DURATION = "16n";
+const OVERLAP = 0;
+const DRONE_PLAYBACK_RATE = 0.05;
+const DRONE_OVERLAP = 0.5;
+const DRONE_DURATION = "2m";
+
+const serverPhaseNameMap = {
+  intro: 0,
+  parameters: 1,
+  drone: 2,
+  names: 3,
+};
 
 const players = {};
 let currentStepIndex = 0;
@@ -23,6 +37,29 @@ const compressor = new Tone.Compressor(-30, 3);
 const reverb = new Tone.Reverb(0.2);
 compressor.connect(reverb);
 reverb.toDestination();
+
+// todo systematize this
+const onServerPhaseChange = (newServerPhase) => {
+  console.log("new server phase in sequencer", newServerPhase);
+
+  if (newServerPhase === serverPhaseNameMap.drone) {
+    steps.forEach((step) => {
+      if (step.player) {
+        step.player.playbackRate = DRONE_PLAYBACK_RATE;
+        step.player.overlap = DRONE_OVERLAP;
+      }
+    });
+  }
+
+  if (newServerPhase === serverPhaseNameMap.intro) {
+    steps.forEach((step) => {
+      if (step.player) {
+        step.player.playbackRate = PLAYBACK_RATE;
+        step.player.overlap = OVERLAP;
+      }
+    });
+  }
+};
 
 const onConnectedClientsChange = (newClients) => {
   // wait a tick- decouple from event?
@@ -59,7 +96,7 @@ const onConnectedClientsChange = (newClients) => {
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
           playbackRate: PLAYBACK_RATE,
           reverse: true,
-          volume: 16
+          volume: 16,
         });
         player.connect(compressor);
         step.player = player;
@@ -67,7 +104,10 @@ const onConnectedClientsChange = (newClients) => {
     });
   });
 };
+
+// register listeners
 registerClientChangeListener(onConnectedClientsChange);
+registerServerPhaseChangeListener(onServerPhaseChange);
 
 export const setupSequencer = async () => {
   // const metronome = new Tone.Player(
@@ -96,7 +136,11 @@ export const setupSequencer = async () => {
       if (!step.player.loaded) return;
 
       // play sample for a 16th note
-      step.player.start(timeToPlay, SAMPLE_OFFSET, "16n");
+      step.player.start(
+        timeToPlay,
+        SAMPLE_OFFSET,
+        serverPhase === serverPhaseNameMap.intro ? DURATION : DRONE_DURATION
+      );
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
       //   if (!metronome.loaded) return;
@@ -104,7 +148,6 @@ export const setupSequencer = async () => {
     }
   });
 
-  Tone.Transport.bpm.value = 40;
   Tone.Transport.start();
 };
 

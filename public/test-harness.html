@@ -29,6 +29,13 @@
       const createIframe = (clientId) => {
         const iframe = document.createElement("iframe");
         iframe.src = `sequencer.html?clientId=${clientId}`;
+
+        // browser doesn't read this as a real user action, so it doesn't work to start tone :()
+        // iframe.onload = () => {
+        //   const startButton =
+        //     iframe.contentWindow.document.getElementById("start");
+        //   startButton.click();
+        // };
         document.body.appendChild(iframe);
       };
 

@@ -17,6 +17,9 @@ const syncClient = new SyncClient(getTimeFunction);
 let connectedClients = [];
 const clientChangeListeners = [];
 
+let serverPhase = 0;
+const serverPhaseChangeListeners = [];
+
 const sendFunction = (pingId, clientPingTime) => {
   socket.emit("ircam", { isPing: true, pingId, clientPingTime });
 };
@@ -50,9 +53,24 @@ socket.on("connectedClients", (newClients) => {
   });
 });
 
+socket.on("phase", ({phaseId}) => {
+  console.log("phase from server", phaseId);
+  serverPhase = phaseId;
+
+  serverPhaseChangeListeners.forEach((listener) => {
+    listener(phaseId);
+  });
+});
+
 const registerClientChangeListener = (callback) => {
   if (typeof callback === "function") {
     clientChangeListeners.push(callback);
+  }
+};
+
+const registerServerPhaseChangeListener = (callback) => {
+  if (typeof callback === "function") {
+    serverPhaseChangeListeners.push(callback);
   }
 };
 
@@ -61,4 +79,6 @@ export {
   syncClient,
   connectedClients,
   registerClientChangeListener,
+  serverPhase,
+  registerServerPhaseChangeListener
 };
