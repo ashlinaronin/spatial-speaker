@@ -10,6 +10,8 @@ const { registerUser, addRecording, getUser } = require("./db");
 const registerNetHandlers = require("./register-net-handlers");
 const registerMovementHandlers = require("./register-movement-handlers");
 const registerSyncHandlers = require("./register-sync-handlers");
+const serverPhaseNameMap = require("./serverPhaseNameMap");
+const { registerPhaseChangeListener } = require("./phase");
 
 const startTime = process.hrtime();
 const getTimeFunction = () => {
@@ -146,12 +148,22 @@ const init = async () => {
     },
   });
 
-  const tempo = 30;
+  const LOOKAHEAD_SECONDS = 2.0;
+  let bpm = 30;
   let current16thNote = 0;
   let futureTickTime = syncServer.getSyncTime();
-  const secondsPerBeat = 60.0 / tempo;
+
+  registerPhaseChangeListener((newPhase) => {
+    if (newPhase === serverPhaseNameMap.drone) {
+      bpm = 2;
+    } else {
+      bpm = 30;
+    }
+    console.log(`phase change to ${newPhase}, new bpm is ${bpm}`);
+  });
 
   const advanceTick = () => {
+    const secondsPerBeat = 60.0 / bpm;
     futureTickTime += 0.25 * secondsPerBeat;
     current16thNote = (current16thNote + 1) % 16;
   };
@@ -163,7 +175,7 @@ const init = async () => {
 
   const seqInterval = setInterval(() => {
     // schedule further in future due to latency
-    while (futureTickTime < syncServer.getSyncTime() + 2.0) {
+    while (futureTickTime < syncServer.getSyncTime() + LOOKAHEAD_SECONDS) {
       scheduleNote(current16thNote, futureTickTime);
       advanceTick();
     }

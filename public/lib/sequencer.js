@@ -6,66 +6,42 @@ import {
   registerServerPhaseChangeListener,
   serverPhase,
 } from "./sync-socket.js";
+import { serverPhaseArray } from "./serverPhaseNameMap.js";
 
 const teamIdEl = document.querySelector("#team-id");
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
-const TOTAL_STEPS = 16;
 const NUM_TEAMS = 4;
 const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
-const PLAYBACK_RATE = 2.0; // note for slow rates need to increase overlap to get realistic result
-const DURATION = "16n";
-const OVERLAP = 0;
-const DRONE_PLAYBACK_RATE = 0.05;
-const DRONE_OVERLAP = 0.5;
-const DRONE_DURATION = "2m";
 
-const serverPhaseNameMap = {
-  intro: 0,
-  parameters: 1,
-  drone: 2,
-  names: 3,
-};
-
-const players = {};
-let currentStepIndex = 0;
 const steps = Array(16)
   .fill(null)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
+// set up basic signal chain
 const compressor = new Tone.Compressor(-30, 3);
 const reverb = new Tone.Reverb(0.2);
 compressor.connect(reverb);
 reverb.toDestination();
 
-// todo systematize this
+let phaseMapping = serverPhaseArray.find((p) => p.index === serverPhase);
 const onServerPhaseChange = (newServerPhase) => {
-  console.log("new server phase in sequencer", newServerPhase);
+  // update cached phaseMapping
+  phaseMapping = serverPhaseArray.find((p) => p.index === newServerPhase);
 
-  if (newServerPhase === serverPhaseNameMap.drone) {
-    steps.forEach((step) => {
-      if (step.player) {
-        step.player.playbackRate = DRONE_PLAYBACK_RATE;
-        step.player.overlap = DRONE_OVERLAP;
-      }
-    });
-  }
-
-  if (newServerPhase === serverPhaseNameMap.intro) {
-    steps.forEach((step) => {
-      if (step.player) {
-        step.player.playbackRate = PLAYBACK_RATE;
-        step.player.overlap = OVERLAP;
-      }
-    });
-  }
+  steps.forEach((step) => {
+    if (step.player) {
+      step.player.playbackRate = phaseMapping.playbackRate;
+      step.player.loop = phaseMapping.loop;
+      step.player.overlap = phaseMapping.overlap;
+      step.player.reverse = phaseMapping.reverse;
+    }
+  });
 };
 
 const onConnectedClientsChange = (newClients) => {
   // wait a tick- decouple from event?
   setTimeout(() => {
-    console.log("newClients in sequencer", newClients);
-
     const thisClientId = getClientId();
     const thisClient = newClients.find(
       (client) => client.clientId === thisClientId
@@ -94,9 +70,11 @@ const onConnectedClientsChange = (newClients) => {
       if (!step.player) {
         const player = new Tone.GrainPlayer({
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
-          playbackRate: PLAYBACK_RATE,
-          reverse: true,
           volume: 16,
+          playbackRate: phaseMapping.playbackRate,
+          loop: phaseMapping.loop,
+          overlap: phaseMapping.overlap,
+          reverse: true,
         });
         player.connect(compressor);
         step.player = player;
@@ -117,30 +95,15 @@ export const setupSequencer = async () => {
   await reverb.ready;
 
   socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
-    // console.log(
-    //   `received tick event with beatDivisionNumber ${beatDivisionNumber} and serverTime ${serverTime}`
-    // );
-
-    // const localTime = syncClient.getLocalTime();
-    // const syncTime = syncClient.getSyncTime();
     const timeToPlay = syncClient.getLocalTime(serverTime);
-
-    // console.log("serverTime from event", serverTime);
-    // console.log("localTime", localTime);
-    // console.log("syncTime", syncTime);
-    // console.log("timeToPlay", timeToPlay);
-
     const step = steps[beatDivisionNumber];
     if (!!step.player) {
       // early return if not loaded yet
       if (!step.player.loaded) return;
 
-      // play sample for a 16th note
-      step.player.start(
-        timeToPlay,
-        SAMPLE_OFFSET,
-        serverPhase === serverPhaseNameMap.intro ? DURATION : DRONE_DURATION
-      );
+      // play sample
+
+      step.player.start(timeToPlay, SAMPLE_OFFSET, phaseMapping.duration);
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
       //   if (!metronome.loaded) return;
