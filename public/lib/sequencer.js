@@ -6,6 +6,7 @@ import {
   registerServerPhaseChangeListener,
   serverPhase,
 } from "./sync-socket.js";
+import { registerMotionListener } from "./sensors.js";
 import { serverPhaseArray } from "./serverPhaseNameMap.js";
 
 const teamIdEl = document.querySelector("#team-id");
@@ -85,9 +86,14 @@ const onConnectedClientsChange = (newClients) => {
   });
 };
 
+const onMotionChange = (({x,y,z}) => {
+  console.log(`getting x ${x}, y ${y}, z ${z}`);
+}) 
+
 // register listeners
 registerClientChangeListener(onConnectedClientsChange);
 registerServerPhaseChangeListener(onServerPhaseChange);
+registerMotionListener(onMotionChange);
 
 export const setupSequencer = async () => {
   // const metronome = new Tone.Player(
