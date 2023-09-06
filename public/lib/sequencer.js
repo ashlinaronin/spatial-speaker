@@ -32,6 +32,7 @@ const onServerPhaseChange = (newServerPhase) => {
   steps.forEach((step) => {
     if (step.player) {
       step.player.playbackRate = phaseMapping.playbackRate;
+      step.player.grainSize = phaseMapping.grainSize;
       step.player.loop = phaseMapping.loop;
       step.player.overlap = phaseMapping.overlap;
       step.player.reverse = phaseMapping.reverse;
@@ -72,9 +73,10 @@ const onConnectedClientsChange = (newClients) => {
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
           volume: 16,
           playbackRate: phaseMapping.playbackRate,
+          grainSize: phaseMapping.grainSize,
           loop: phaseMapping.loop,
           overlap: phaseMapping.overlap,
-          reverse: true,
+          reverse: phaseMapping.reverse,
         });
         player.connect(compressor);
         step.player = player;
@@ -102,6 +104,9 @@ export const setupSequencer = async () => {
       if (!step.player.loaded) return;
 
       // play sample
+      console.log(
+        `scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${phaseMapping.duration}`
+      );
 
       step.player.start(timeToPlay, SAMPLE_OFFSET, phaseMapping.duration);
     } else {
