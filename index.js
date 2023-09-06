@@ -11,7 +11,7 @@ const registerNetHandlers = require("./register-net-handlers");
 const registerMovementHandlers = require("./register-movement-handlers");
 const registerSyncHandlers = require("./register-sync-handlers");
 const serverPhaseNameMap = require("./serverPhaseNameMap");
-const { registerPhaseChangeListener } = require("./phase");
+const { registerPhaseChangeListener, getPhase } = require("./phase");
 
 const startTime = process.hrtime();
 const getTimeFunction = () => {
@@ -180,6 +180,12 @@ const init = async () => {
       advanceTick();
     }
   }, 50);
+
+  const phaseInterval = setInterval(() => {
+    // send phase periodically so that any newly connected clients get lined up
+    console.log("emitting phase", getPhase());
+    io.emit("phase", { phaseId: getPhase() });
+  }, 6000);
 
   io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
