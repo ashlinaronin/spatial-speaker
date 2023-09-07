@@ -9,6 +9,7 @@ import {
 import { getLatestMovement } from "./sensors.js";
 import { serverPhaseArray } from "./serverPhaseNameMap.js";
 import scale from "./scale.js";
+import { setLocalPhase } from "./phases.js";
 
 const teamIdEl = document.querySelector("#team-id");
 const timeEl = document.querySelector("#time");
@@ -36,6 +37,13 @@ const onServerPhaseChange = (newServerPhase) => {
 
   // update cached phaseMapping
   phaseMapping = serverPhaseArray.find((p) => p.index === newServerPhase);
+  // duration = phaseMapping.duration;
+
+  if (!phaseMapping.play) {
+    Tone.Transport.stop();
+  } else {
+    Tone.Transport.start();
+  }
 
   steps.forEach((step) => {
     if (step.player) {
@@ -46,6 +54,13 @@ const onServerPhaseChange = (newServerPhase) => {
       step.player.reverse = phaseMapping.reverse;
     }
   });
+
+  // todo make this nicer when consolidating phase concepts, please...
+  if (newServerPhase === 4) {
+    setLocalPhase(2); // server phase 4 is end, local phase 2 is end
+  } else {
+    setLocalPhase(1); // back to sequencer
+  }
 };
 
 const onConnectedClientsChange = (newClients) => {
@@ -97,7 +112,11 @@ const ACCEL_LOW_INPUT = 0;
 const ACCEL_HI_INPUT = 10;
 const DETUNE_LOW = -100;
 const DETUNE_HI = 100;
+const DURATION_LOW = 100;
+const DURATION_HI = 2000;
 const SENSOR_READ_MS = 200;
+
+let duration = phaseMapping.duration;
 
 const sensorReadInterval = setInterval(() => {
   latestMovement = getLatestMovement();
@@ -114,6 +133,17 @@ const sensorReadInterval = setInterval(() => {
   );
   console.log("detuning to", newDetune);
 
+  const newDuration = scale(
+    Math.abs(latestMovement.motionX),
+    ACCEL_LOW_INPUT,
+    ACCEL_HI_INPUT,
+    DURATION_LOW,
+    DURATION_HI
+  );
+
+  duration = newDuration; // beware that this overrides the phase specific duration... 
+  // so maybe we should only apply it in phases 0,1? trying all for now
+
   steps.forEach((step) => {
     if (step.player) {
       step.player.detune = newDetune;
@@ -121,28 +151,9 @@ const sensorReadInterval = setInterval(() => {
   });
 }, SENSOR_READ_MS);
 
-// const onMotionChange = ({ x, y, z }) => {
-//   // console.log(`getting x ${x}, y ${y}, z ${z}`);
-//   const newDetune = scale(
-//     Math.abs(y),
-//     ACCEL_LOW_INPUT,
-//     ACCEL_HI_INPUT,
-//     DETUNE_LOW,
-//     DETUNE_HI
-//   );
-//   // console.log("detuning to", newDetune);
-
-//   steps.forEach((step) => {
-//     if (step.player) {
-//       step.player.detune = newDetune;
-//     }
-//   });
-// };
-
 // register listeners
 registerClientChangeListener(onConnectedClientsChange);
 registerServerPhaseChangeListener(onServerPhaseChange);
-// registerMotionListener(onMotionChange);
 
 export const setupSequencer = async () => {
   // const metronome = new Tone.Player(
@@ -160,11 +171,11 @@ export const setupSequencer = async () => {
 
       // play sample
       console.log(
-        `scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${phaseMapping.duration}`
+        `scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${duration}`
       );
-      timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${phaseMapping.duration}`
+      timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`
 
-      step.player.start(timeToPlay, SAMPLE_OFFSET, phaseMapping.duration);
+      step.player.start(timeToPlay, SAMPLE_OFFSET, duration);
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
       //   if (!metronome.loaded) return;
