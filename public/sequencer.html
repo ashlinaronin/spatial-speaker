@@ -6,7 +6,6 @@
   <body>
     <h1>spatial speaker: sequencer</h1>
     <button id="start">start</button>
-    <button id="stop">stop</button>
     <p id="status"></p>
     <p id="client-id"></p>
     <p id="team-id"></p>
@@ -44,11 +43,6 @@
         },
         true
       );
-
-      // when the stop button is clicked, stop the sample player
-      document
-        .querySelector("#stop")
-        .addEventListener("click", stopSequencer, true);
     </script>
   </body>
 </html>

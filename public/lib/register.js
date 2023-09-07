@@ -2,13 +2,10 @@ import { visualize } from "./visualizer.js";
 import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
 
 const recordButton = document.querySelector(".record");
-const soundClips = document.querySelector(".sound-clips");
-const nextPageLink = document.querySelector(".next-page-link");
 
 let recordings = [];
 let recording = false;
 const clientId = uuidv4();
-nextPageLink.href = `sequencer.html?clientId=${clientId}`;
 
 const registerUser = async function () {
   // todo: url config for deployment
@@ -29,11 +26,6 @@ const onGumSuccess = function (stream) {
     console.log("recorder stopped");
 
     const clipName = `${clientId}_${getPhase().value}`;
-    const clipContainer = document.createElement("article");
-    clipContainer.id = `audio_${clipName}`; // id must start with letter and guid may or may not... so this is a safe way to ensure it always starts with a letter
-
-    soundClips.appendChild(clipContainer);
-
     const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
     const audioURL = window.URL.createObjectURL(blob);
     recordings.push({ clipName, blob });
@@ -66,9 +58,10 @@ const onGumSuccess = function (stream) {
   const transitionToNextPhase = async () => {
     nextPhase();
 
-    if (getPhase().value === PHASES.UPLOAD.value) {
+    if (getPhase().value === PHASES.SEQUENCER.value) {
       await registerUser();
       await uploadRecordings();
+      window.location.href = `sequencer.html?clientId=${clientId}`
     }
   };
 

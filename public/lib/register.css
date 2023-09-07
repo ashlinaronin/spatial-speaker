@@ -124,13 +124,6 @@ button:active,
   transform: translateY(2px);
 }
 
-/* Make the clips use as much space as possible, and
-   * also show a scrollbar when there are too many clips to show
-   * in the available space */
-.sound-clips {
-  overflow: auto;
-}
-
 section,
 article {
   display: block;

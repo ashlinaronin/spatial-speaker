@@ -1,6 +1,6 @@
 export const PHASES = {
   RECORD_NAME: { friendlyName: "name", value: "RECORD_NAME" },
-  UPLOAD: { friendlyName: "upload", value: "UPLOAD" },
+  SEQUENCER: { friendlyName: "sequencer", value: "SEQUENCER" },
 };
 const PHASES_ARRAY = Object.values(PHASES);
 const phaseEl = document.querySelector(".phase");
