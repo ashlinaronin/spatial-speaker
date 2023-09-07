@@ -24,6 +24,12 @@ body {
   font-family: "Lumanosimo", serif;
 }
 
+img {
+  width: 100%;
+  margin-top: 1rem;
+  filter: drop-shadow(1px 0px 10px #FFF);
+}
+
 .wrapper {
   height: 100%;
   display: flex;
@@ -55,6 +61,8 @@ h6 {
 p {
   padding: 0.5rem 0 0.5rem 0;
   font-size: 1rem;
+  color: white;
+  text-shadow: #FFF 1px 0 10px;
 }
 
 .main-controls {

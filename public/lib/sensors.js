@@ -11,6 +11,8 @@ const zEl = document.querySelector("#z");
 const statusEl = document.querySelector("#status");
 const mapLinkEl = document.querySelector("#map-link");
 
+// const motionListeners = [];
+
 const latestMovement = {
   clientId: getClientId(),
 };
@@ -99,6 +101,9 @@ export const handleMotionEvent = (event) => {
   const timestamp = getUtcTimestamp();
 
   latestMovement.timestamp = timestamp;
+  // motionListeners.forEach((listener) => {
+  //   listener({ x, y, z });
+  // });
 };
 
 export const setupDeviceOrientation = () => {
@@ -111,6 +116,13 @@ export const setupDeviceOrientation = () => {
     true
   );
 };
+
+// todo: debounce?
+// export const registerMotionListener = (callback) => {
+//   if (typeof callback === "function") {
+//     motionListeners.push(callback);
+//   }
+// };
 
 export const setupDeviceMotion = () => {
   window.addEventListener("devicemotion", handleMotionEvent, true);
@@ -131,19 +143,19 @@ export const initializeSensorApis = async () => {
     }
   }
 
-// if ("DeviceOrientationEvent" in window) {
-//   if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-//     // try to initialize without requesting permission
-//     setupDeviceOrientation();
-//   } else {
-//     // ask nicely
-//     const permissionResponse =
-//       await DeviceOrientationEvent.requestPermission();
-//     if (permissionResponse === "granted") {
-//       setupDeviceOrientation();
-//     }
-//   }
-// }
+  // if ("DeviceOrientationEvent" in window) {
+  //   if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+  //     // try to initialize without requesting permission
+  //     setupDeviceOrientation();
+  //   } else {
+  //     // ask nicely
+  //     const permissionResponse =
+  //       await DeviceOrientationEvent.requestPermission();
+  //     if (permissionResponse === "granted") {
+  //       setupDeviceOrientation();
+  //     }
+  //   }
+  // }
 
   // geoFindMe();
 
