@@ -22,16 +22,16 @@ export const serverPhaseNameMap = {
   drone: {
     index: 2,
     playbackRate: 0.001,
-    grainSize: 0.001,
+    grainSize: 0.0001,
     loop: true,
-    duration: "4m", // another option - no duration will default to full length of sample
-    overlap: 2.5,
+    duration: "8m", // another option - no duration will default to full length of sample
+    overlap: 4,
     reverse: true,
   },
   names: {
     index: 3,
     playbackRate: 1,
-    grainSize: 0.2,
+    grainSize: 0.02,
     loop: false,
     duration: "4n",
     overlap: 0.25,
