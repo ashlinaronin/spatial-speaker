@@ -160,5 +160,6 @@ export const initializeSensorApis = async () => {
   // geoFindMe();
 
   // start sending latest movement via socket to server
-  const interval = setInterval(sendLatestMovement, 200);
+  // disable to see if this helps with memory use
+  // const interval = setInterval(sendLatestMovement, 200);
 };
