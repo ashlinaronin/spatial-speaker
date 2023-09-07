@@ -1,6 +1,7 @@
 export const PHASES = {
   RECORD_NAME: { friendlyName: "name", value: "RECORD_NAME" },
   SEQUENCER: { friendlyName: "sequencer", value: "SEQUENCER" },
+  GOODBYE: { friendlyName: "goodbye", value: "GOODBYE" },
 };
 const PHASES_ARRAY = Object.values(PHASES);
 const phaseEl = document.querySelector(".phase");
@@ -14,12 +15,35 @@ export function getPhaseFriendlyName() {
   return PHASES_ARRAY[phaseIndex]?.friendlyName;
 }
 
+export function setLocalPhase(newPhaseIndex) {
+  // if (phaseIndex === PHASES_ARRAY.length - 1) {
+  //   throw new Error("phaseIndex out of bounds");
+  // }
+
+  // hide anything from current phase
+  document
+    .querySelectorAll(`.phase-${phaseIndex}`)
+    .forEach((el) => el.classList.add("hidden"));
+
+  phaseIndex = newPhaseIndex;
+
+  // show all things from next phase
+  document
+    .querySelectorAll(`.phase-${phaseIndex}`)
+    .forEach((el) => el.classList.remove("hidden"));
+
+  // reset visualizer width (when it is hidden, it doesn't get width set properly)
+  window.onresize();
+
+  phaseEl.textContent = `${phaseIndex}/${PHASES_ARRAY.length - 1}`;
+}
+
 export function nextPhase() {
   if (phaseIndex === PHASES_ARRAY.length - 1) {
     throw new Error("phaseIndex out of bounds");
   }
 
-  // hide anything from previous phase
+  // hide anything from current phase
   document
     .querySelectorAll(`.phase-${phaseIndex}`)
     .forEach((el) => el.classList.add("hidden"));
