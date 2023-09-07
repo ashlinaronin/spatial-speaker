@@ -6,8 +6,29 @@
   <body>
     <h1>spatial speaker: test harness</h1>
     <script type="module">
+      // don't try this at home, kids
       // start with hardcoded, then eventually pull from db via api
-      const clientIds = [
+
+      const ashlinmeClientIds = [
+        "3371cecd-bc29-4144-808d-6de246b7336b",
+        "83ddc287-c316-446b-ab65-b6941ede36d7",
+        "2b0c44d2-b585-48af-b9fc-effa341b0373",
+        "e781ea5f-765f-40b9-906c-6d77cd011199",
+        "4606438c-ccee-4d6c-9832-b54eb87dae0f",
+        "d0b50244-eb1e-4c6f-9d83-1e12c3c894a1",
+        "e72058ee-41f9-4f49-b2ec-ff3f55f3daf8",
+        "bee20c62-5448-4de5-9583-5b0f09b888d9",
+        "a5e0f43a-6ef7-48cb-998d-429631a48408",
+        "a62caa30-d0d6-48d1-ac4d-202165e7648c",
+        "508ce07c-70b5-400c-b331-ca01e5497012",
+        "e8f24dd6-a2bd-41e8-a62b-43e000dab9b8",
+        "8bfdcbab-ed32-4cca-baa2-0c504153d5b8",
+        "ae6f567e-0d1a-4710-ac3b-9a2e89fdef3f",
+        "19cd073d-ca85-4fe0-a9a0-0c34806be806",
+        "7d794e49-2754-46c0-afe0-2be1357d6c5a",
+      ];
+
+      const localClientIds = [
         "1457effa-d696-43bc-acc5-83a042b42018",
         "638d5dc7-5fda-469f-9d69-69db3f9f8ddb",
         "46d60bfd-33b2-4ba2-a317-b65c4b59542e",
@@ -25,6 +46,11 @@
         "6e85509a-74b6-4077-9eb6-34c50855112f",
         "f265a2fc-5be9-4f13-8871-694cc57e205c",
       ];
+
+      const clientIds =
+        window.location.host === "ashlin.me"
+          ? ashlinmeClientIds
+          : localClientIds;
 
       const createIframe = (clientId) => {
         const iframe = document.createElement("iframe");
