@@ -11,6 +11,7 @@ import { serverPhaseArray } from "./serverPhaseNameMap.js";
 import scale from "./scale.js";
 
 const teamIdEl = document.querySelector("#team-id");
+const timeEl = document.querySelector("#time");
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const NUM_TEAMS = 4;
@@ -161,6 +162,7 @@ export const setupSequencer = async () => {
       console.log(
         `scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${phaseMapping.duration}`
       );
+      timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${phaseMapping.duration}`
 
       step.player.start(timeToPlay, SAMPLE_OFFSET, phaseMapping.duration);
     } else {
