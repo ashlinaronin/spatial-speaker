@@ -1,19 +1,40 @@
 import { visualize } from "./visualizer.js";
-import { PHASES, getPhase, getPhaseFriendlyName, nextPhase } from "./phases.js";
+import { PHASES, getPhase, nextPhase } from "./phases.js";
+import { setupSequencer } from "./sequencer.js";
+import { initializeSocket } from "./sync-socket.js";
+import { initializeSensorApis } from "./sensors.js";
 
+// collect all the elements we'll need to refer to
 const recordButton = document.querySelector(".record");
+const clientIdEl = document.querySelector("#client-id");
 
 let recordings = [];
 let recording = false;
 const clientId = uuidv4();
 
 const registerUser = async function () {
-  // todo: url config for deployment
   await fetch(`register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ clientId }),
   });
+};
+
+const sleep = async (ms) =>
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const loadSequencer = async () => {
+  clientIdEl.textContent = `clientId: ${clientId}`;
+  initializeSocket(clientId);
+
+  await initializeSensorApis(clientId);
+  await Tone.start();
+
+  // wait for sync to init
+  await sleep(5000);
+  await setupSequencer();
 };
 
 const onGumSuccess = function (stream) {
@@ -46,7 +67,6 @@ const onGumSuccess = function (stream) {
         const formData = new FormData();
         formData.append("file", blob, `${clipName}.ogg`);
 
-        // todo: url config for deployment
         await fetch(`recording/${clientId}`, {
           method: "POST",
           body: formData,
@@ -59,13 +79,23 @@ const onGumSuccess = function (stream) {
     nextPhase();
 
     if (getPhase().value === PHASES.SEQUENCER.value) {
+      if (history.pushState) {
+        history.pushState(
+          null,
+          "",
+          `${window.location.origin}${window.location.pathname}sequencer.html?clientId=${clientId}`
+        );
+      }
+
       await registerUser();
+      await sleep(200);
       await uploadRecordings();
-      window.location.href = `sequencer.html?clientId=${clientId}`
+      await sleep(200);
+      await loadSequencer();
     }
   };
 
-  recordButton.onclick = function () {
+  recordButton.onclick = async function () {
     if (recording) {
       recording = false;
       mediaRecorder.stop();

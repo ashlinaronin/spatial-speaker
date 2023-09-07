@@ -13,9 +13,7 @@ const mapLinkEl = document.querySelector("#map-link");
 
 // const motionListeners = [];
 
-const latestMovement = {
-  clientId: getClientId(),
-};
+const latestMovement = {};
 
 const sendLatestMovement = () => {
   socket.emit("movement", latestMovement);
@@ -128,7 +126,9 @@ export const setupDeviceMotion = () => {
   window.addEventListener("devicemotion", handleMotionEvent, true);
 };
 
-export const initializeSensorApis = async () => {
+export const initializeSensorApis = async (clientId) => {
+  latestMovement.clientId = clientId;
+
   // todo handle error case
   if ("DeviceMotionEvent" in window) {
     if (typeof DeviceMotionEvent.requestPermission !== "function") {

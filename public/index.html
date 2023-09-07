@@ -15,7 +15,10 @@
   <body>
     <div class="wrapper">
       <header>
-        <img src="lib/the_gift_logo.png" alt="the gift logo, a question mark ear inside a pyramid">
+        <img
+          src="lib/the_gift_logo.png"
+          alt="the gift logo, a question mark ear inside a pyramid"
+        />
       </header>
 
       <section class="phase phase-0">
@@ -27,7 +30,17 @@
           <button class="record">rê¢ðrÐ</button>
         </div>
       </section>
+      <section class="phase phase-1 hidden">
+        <p id="status"></p>
+        <p id="client-id"></p>
+        <p id="team-id"></p>
+      </section>
     </div>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uuid@latest/dist/umd/uuidv4.min.js"></script>
     <script src="lib/register.js" type="module"></script>
   </body>

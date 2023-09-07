@@ -1,14 +1,33 @@
 <html>
   <head>
-    <title>spatial speaker: sequencer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>the gift: sequencer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lumanosimo&family=Codystar&display=swap"
+      rel="stylesheet"
+    />
+    <link href="lib/register.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>spatial speaker: sequencer</h1>
-    <button id="start">start</button>
-    <p id="status"></p>
-    <p id="client-id"></p>
-    <p id="team-id"></p>
+    <div class="wrapper">
+      <header>
+        <img
+          src="lib/the_gift_logo.png"
+          alt="the gift logo, a question mark ear inside a pyramid"
+        />
+      </header>
+      <section>
+        <div class="buttons">
+          <button id="start">start</button>
+        </div>
+
+        <p id="status"></p>
+        <p id="client-id"></p>
+        <p id="team-id"></p>
+      </section>
+    </div>
 
     <script
       type="text/javascript"
@@ -16,23 +35,23 @@
     ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script type="module">
-      import { socket, syncClient } from "./lib/sync-socket.js";
+      import { initializeSocket } from "./lib/sync-socket.js";
       import { initializeSensorApis } from "./lib/sensors.js";
       import { getClientId } from "./lib/getClientId.js";
-      import { setupSequencer, stopSequencer } from "./lib/sequencer.js";
+      import { setupSequencer } from "./lib/sequencer.js";
 
       // collect all the elements we'll need to refer to
-      const status = document.querySelector("#status");
       const clientIdEl = document.querySelector("#client-id");
 
       const clientId = getClientId();
       clientIdEl.textContent = `clientId: ${clientId}`;
+      initializeSocket(clientId);
 
       // when the start button is clicked, initialize all the sensors and start Tone
       document.querySelector("#start").addEventListener(
         "click",
         async () => {
-          await initializeSensorApis();
+          await initializeSensorApis(clientId);
           await Tone.start();
 
           // wait for sync to init

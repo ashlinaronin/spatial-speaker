@@ -1,12 +1,6 @@
-import { getClientId } from "./getClientId.js";
 import SyncClient from "./ircam-client-converted.js";
 
-const socket = io("", {
-  path: "/spatial-socket/",
-  query: {
-    clientId: getClientId(),
-  },
-});
+let socket = null;
 
 // return the local time in seconds
 const getTimeFunction = () => Tone.now();
@@ -35,33 +29,6 @@ const receiveFunction = (callback) => {
   );
 };
 
-socket.on("connect", () => {
-  // check the synchronization status, when this function is called for the
-  // first time, you can consider the synchronization process properly
-  // initiated.
-  const statusFunction = (status) => console.log(status);
-  // start synchronization process
-  syncClient.start(sendFunction, receiveFunction, statusFunction);
-});
-
-socket.on("connectedClients", (newClients) => {
-  console.log("connectedClients from server", newClients);
-  connectedClients = newClients;
-
-  clientChangeListeners.forEach((listener) => {
-    listener(newClients);
-  });
-});
-
-socket.on("phase", ({phaseId}) => {
-  console.log("phase from server", phaseId);
-  serverPhase = phaseId;
-
-  serverPhaseChangeListeners.forEach((listener) => {
-    listener(phaseId);
-  });
-});
-
 const registerClientChangeListener = (callback) => {
   if (typeof callback === "function") {
     clientChangeListeners.push(callback);
@@ -74,11 +41,48 @@ const registerServerPhaseChangeListener = (callback) => {
   }
 };
 
+const initializeSocket = (clientId) => {
+  socket = io("", {
+    path: "/spatial-socket/",
+    query: {
+      clientId,
+    },
+  });
+
+  socket.on("connect", () => {
+    // check the synchronization status, when this function is called for the
+    // first time, you can consider the synchronization process properly
+    // initiated.
+    const statusFunction = (status) => console.log(status);
+    // start synchronization process
+    syncClient.start(sendFunction, receiveFunction, statusFunction);
+  });
+
+  socket.on("connectedClients", (newClients) => {
+    console.log("connectedClients from server", newClients);
+    connectedClients = newClients;
+
+    clientChangeListeners.forEach((listener) => {
+      listener(newClients);
+    });
+  });
+
+  socket.on("phase", ({ phaseId }) => {
+    console.log("phase from server", phaseId);
+    serverPhase = phaseId;
+
+    serverPhaseChangeListeners.forEach((listener) => {
+      listener(phaseId);
+    });
+  });
+};
+
 export {
+  initializeSocket,
   socket,
   syncClient,
   connectedClients,
   registerClientChangeListener,
   serverPhase,
-  registerServerPhaseChangeListener
+  registerServerPhaseChangeListener,
 };
