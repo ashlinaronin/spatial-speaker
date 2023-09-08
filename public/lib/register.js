@@ -29,7 +29,6 @@ const loadSequencer = async () => {
   clientIdEl.textContent = `clientId: ${clientId}`;
   initializeSocket(clientId);
 
-  await initializeSensorApis(clientId);
   await Tone.start();
 
   // wait for sync to init
@@ -104,6 +103,7 @@ const onGumSuccess = function (stream) {
       recordButton.style.background = "";
       recordButton.style.color = "";
       recordButton.textContent = "record";
+      await initializeSensorApis(clientId);
     } else {
       recording = true;
       mediaRecorder.start();

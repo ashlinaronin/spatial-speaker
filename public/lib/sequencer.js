@@ -13,6 +13,7 @@ import { setLocalPhase } from "./phases.js";
 
 const teamIdEl = document.querySelector("#team-id");
 const timeEl = document.querySelector("#time");
+const motionOutEl = document.querySelector("#motion-out");
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const NUM_TEAMS = 4;
@@ -114,6 +115,8 @@ const DETUNE_LOW = -100;
 const DETUNE_HI = 100;
 const DURATION_LOW = 100;
 const DURATION_HI = 2000;
+const OVERLAP_LOW = 1;
+const OVERLAP_HI = 3;
 const SENSOR_READ_MS = 200;
 
 let duration = phaseMapping.duration;
@@ -131,7 +134,14 @@ const sensorReadInterval = setInterval(() => {
     DETUNE_LOW,
     DETUNE_HI
   );
-  console.log("detuning to", newDetune);
+
+  // const newOverlap = scale(
+  //   Math.abs(latestMovement.motionZ),
+  //   ACCEL_LOW_INPUT,
+  //   ACCEL_HI_INPUT,
+  //   OVERLAP_LOW,
+  //   OVERLAP_HI
+  // );
 
   const newDuration = scale(
     Math.abs(latestMovement.motionX),
@@ -141,14 +151,17 @@ const sensorReadInterval = setInterval(() => {
     DURATION_HI
   );
 
-  duration = newDuration; // beware that this overrides the phase specific duration... 
+  duration = newDuration; // beware that this overrides the phase specific duration...
   // so maybe we should only apply it in phases 0,1? trying all for now
 
   steps.forEach((step) => {
     if (step.player) {
       step.player.detune = newDetune;
+      // step.player.overlap = newOverlap;
     }
   });
+
+  motionOutEl.textContent = `${latestMovement.motionX}, ${latestMovement.motionY}, ${latestMovement.motionZ}`;
 }, SENSOR_READ_MS);
 
 // register listeners
@@ -173,7 +186,7 @@ export const setupSequencer = async () => {
       console.log(
         `scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${duration}`
       );
-      timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`
+      timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`;
 
       step.player.start(timeToPlay, SAMPLE_OFFSET, duration);
     } else {
