@@ -151,7 +151,7 @@ const sensorReadInterval = setInterval(() => {
     DURATION_HI
   );
 
-  duration = newDuration; // beware that this overrides the phase specific duration...
+  // duration = newDuration; // beware that this overrides the phase specific duration...
   // so maybe we should only apply it in phases 0,1? trying all for now
 
   steps.forEach((step) => {
