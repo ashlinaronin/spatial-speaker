@@ -38,7 +38,7 @@ const onServerPhaseChange = (newServerPhase) => {
 
   // update cached phaseMapping
   phaseMapping = serverPhaseArray.find((p) => p.index === newServerPhase);
-  // duration = phaseMapping.duration;
+  duration = phaseMapping.duration;
 
   if (!phaseMapping.play) {
     Tone.Transport.stop();
@@ -95,7 +95,7 @@ const onConnectedClientsChange = (newClients) => {
       if (!step.player) {
         const player = new Tone.GrainPlayer({
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
-          volume: 20,
+          volume: 80,
           playbackRate: phaseMapping.playbackRate,
           grainSize: phaseMapping.grainSize,
           loop: phaseMapping.loop,
@@ -135,13 +135,13 @@ const sensorReadInterval = setInterval(() => {
     DETUNE_HI
   );
 
-  // const newOverlap = scale(
-  //   Math.abs(latestMovement.motionZ),
-  //   ACCEL_LOW_INPUT,
-  //   ACCEL_HI_INPUT,
-  //   OVERLAP_LOW,
-  //   OVERLAP_HI
-  // );
+  const newOverlap = scale(
+    Math.abs(latestMovement.motionZ),
+    ACCEL_LOW_INPUT,
+    ACCEL_HI_INPUT,
+    OVERLAP_LOW,
+    OVERLAP_HI
+  );
 
   const newDuration = scale(
     Math.abs(latestMovement.motionX),
@@ -157,7 +157,7 @@ const sensorReadInterval = setInterval(() => {
   steps.forEach((step) => {
     if (step.player) {
       step.player.detune = newDetune;
-      // step.player.overlap = newOverlap;
+      step.player.overlap = newOverlap;
     }
   });
 
