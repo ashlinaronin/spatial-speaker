@@ -34,7 +34,7 @@ const compressor = new Tone.Compressor({
   release: 1,
   threshold: -33,
 });
-const gain = new Tone.Gain(4);
+const gain = new Tone.Gain(100);
 const reverb = new Tone.Reverb(0.2);
 compressor.connect(gain);
 gain.connect(reverb);
@@ -67,10 +67,23 @@ const onServerPhaseChange = (newServerPhase) => {
 };
 
 const onConnectedClientsChange = (newClients) => {
+  // there is a potential moment when reloading where the same client can be provided twice
+  // we could fix this on the server side, but it's a bit complicated to do there bc it's technically
+  // behaving correctly
+  // so we dedupe here on the client side for now
+  const dedupedNewClients = (() => {
+    const clientIds = newClients.map(({ clientId }) => clientId);
+    // filter for any clients after this one not having the same clientId (see https://www.geeksforgeeks.org/how-to-remove-duplicates-from-an-array-of-objects-using-javascript/#)
+    const filtered = newClients.filter(
+      ({ clientId }, index) => !clientIds.includes(clientId, index + 1)
+    );
+    return filtered;
+  })();
+
   // wait a tick- decouple from event?
   setTimeout(() => {
     const thisClientId = getClientId();
-    const thisClient = newClients.find(
+    const thisClient = dedupedNewClients.find(
       (client) => client.clientId === thisClientId
     );
     const thisTeamId = thisClient?.teamId;
@@ -85,7 +98,7 @@ const onConnectedClientsChange = (newClients) => {
 
     // pick 4 clients for this team for the appropriate beats
     // later decide how to handle more than 16 ppl
-    const newClientsWithMatchingTeamId = newClients
+    const newClientsWithMatchingTeamId = dedupedNewClients
       .filter((client) => client.teamId === thisTeamId)
       .slice(0, 4);
     const stepsToUpdate = steps.filter((step) => step.teamId === thisTeamId);
@@ -97,7 +110,7 @@ const onConnectedClientsChange = (newClients) => {
       if (!step.player) {
         const player = new Tone.GrainPlayer({
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
-          volume: 120,
+          volume: 1,
           playbackRate: phaseMapping.playbackRate,
           grainSize: phaseMapping.grainSize,
           loop: phaseMapping.loop,
@@ -196,7 +209,8 @@ export const setupSequencer = async () => {
       );
       timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`;
 
-      step.player.start(timeToPlay, SAMPLE_OFFSET, duration);
+      step.player.start(timeToPlay, SAMPLE_OFFSET);
+      // step.player.stop(timeToPlay + duration);
     } else {
       // play metronome on non-occupied beats, for debugging. disabled for now
       //   if (!metronome.loaded) return;
