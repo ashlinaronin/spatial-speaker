@@ -17,9 +17,9 @@ const motionOutEl = document.querySelector("#motion-out");
 
 // inspired by https://medium.com/geekculture/creating-a-step-sequencer-with-tone-js-32ea3002aaf5
 const NUM_TEAMS = 4;
-const SAMPLE_OFFSET = 0.08; // seems to account for the click of the button and pick up once user actually started speaking
+const SAMPLE_OFFSET = 0.15; // seems to account for the click of the button and pick up once user actually started speaking
 
-const steps = Array(16)
+const steps = Array(4)
   .fill(null)
   .map((val, index) => ({ teamId: index % NUM_TEAMS, player: null }));
 
@@ -27,9 +27,17 @@ const steps = Array(16)
 let latestMovement;
 
 // set up basic signal chain
-const compressor = new Tone.Compressor(-30, 3);
+const compressor = new Tone.Compressor({
+  attack: 0.007,
+  knee: 5.2,
+  ratio: 7.88,
+  release: 1,
+  threshold: -33,
+});
+const gain = new Tone.Gain(4);
 const reverb = new Tone.Reverb(0.2);
-compressor.connect(reverb);
+compressor.connect(gain);
+gain.connect(reverb);
 reverb.toDestination();
 
 let phaseMapping = serverPhaseArray.find((p) => p.index === serverPhase);
@@ -89,7 +97,7 @@ const onConnectedClientsChange = (newClients) => {
       if (!step.player) {
         const player = new Tone.GrainPlayer({
           url: `uploads/${clientId}_RECORD_NAME.ogg`,
-          volume: 80,
+          volume: 120,
           playbackRate: phaseMapping.playbackRate,
           grainSize: phaseMapping.grainSize,
           loop: phaseMapping.loop,

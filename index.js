@@ -148,7 +148,10 @@ const init = async () => {
     },
   });
 
+  const PHASE_BROADCAST_INTERVAL_MS = 6000;
+
   const LOOKAHEAD_SECONDS = 2.0;
+  const SEQUENCER_STEPS = 4;
   let bpm = 30;
   let current16thNote = 0;
   let futureTickTime = syncServer.getSyncTime();
@@ -165,7 +168,7 @@ const init = async () => {
   const advanceTick = () => {
     const secondsPerBeat = 60.0 / bpm;
     futureTickTime += 0.25 * secondsPerBeat;
-    current16thNote = (current16thNote + 1) % 16;
+    current16thNote = (current16thNote + 1) % SEQUENCER_STEPS;
   };
 
   const scheduleNote = (beatDivisionNumber, time) => {
@@ -185,7 +188,7 @@ const init = async () => {
     // send phase periodically so that any newly connected clients get lined up
     console.log("emitting phase", getPhase());
     io.emit("phase", { phaseId: getPhase() });
-  }, 6000);
+  }, PHASE_BROADCAST_INTERVAL_MS);
 
   io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
