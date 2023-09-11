@@ -9,6 +9,7 @@ export const serverPhaseNameMap = {
     duration: "16n",
     overlap: 0.1,
     reverse: true,
+    applyMotion: false,
     play: true,
   },
   parameters: {
@@ -19,6 +20,7 @@ export const serverPhaseNameMap = {
     duration: "16n",
     overlap: 0.1,
     reverse: true,
+    applyMotion: true,
     play: true,
   },
   drone: {
@@ -29,6 +31,7 @@ export const serverPhaseNameMap = {
     duration: "8m", // another option - no duration will default to full length of sample
     overlap: 4,
     reverse: true,
+    applyMotion: true,
     play: true,
   },
   names: {
@@ -39,17 +42,19 @@ export const serverPhaseNameMap = {
     duration: "4n",
     overlap: 0.25,
     reverse: false,
+    applyMotion: true,
     play: true,
   },
   end: {
     // note that all these params don't make a difference since play = false
-    index:4,
+    index: 4,
     playbackRate: 1,
     grainSize: 0.02,
     loop: false,
     duration: "4n",
     overlap: 0.25,
     reverse: false,
+    applyMotion: false,
     play: false,
   },
 };

@@ -40,12 +40,6 @@ const onServerPhaseChange = (newServerPhase) => {
   phaseMapping = serverPhaseArray.find((p) => p.index === newServerPhase);
   duration = phaseMapping.duration;
 
-  if (!phaseMapping.play) {
-    Tone.Transport.stop();
-  } else {
-    Tone.Transport.start();
-  }
-
   steps.forEach((step) => {
     if (step.player) {
       step.player.playbackRate = phaseMapping.playbackRate;
@@ -127,6 +121,11 @@ const sensorReadInterval = setInterval(() => {
   // if we don't have any movement data, don't try to map it
   if (typeof latestMovement.motionY !== "number") return;
 
+  motionOutEl.textContent = `${latestMovement.motionX}, ${latestMovement.motionY}, ${latestMovement.motionZ}`;
+
+  // if this phase mapping is not meant to use these params, bail
+  if (!phaseMapping.applyMotion) return;
+
   const newDetune = scale(
     Math.abs(latestMovement.motionY),
     ACCEL_LOW_INPUT,
@@ -160,8 +159,6 @@ const sensorReadInterval = setInterval(() => {
       step.player.overlap = newOverlap;
     }
   });
-
-  motionOutEl.textContent = `${latestMovement.motionX}, ${latestMovement.motionY}, ${latestMovement.motionZ}`;
 }, SENSOR_READ_MS);
 
 // register listeners
@@ -176,6 +173,9 @@ export const setupSequencer = async () => {
   await reverb.ready;
 
   socket.on("tick", ({ beatDivisionNumber, serverTime }) => {
+    // if this phase doesn't involve playing sound, bail
+    if (!phaseMapping.play) return;
+
     const timeToPlay = syncClient.getLocalTime(serverTime);
     const step = steps[beatDivisionNumber];
     if (!!step.player) {
