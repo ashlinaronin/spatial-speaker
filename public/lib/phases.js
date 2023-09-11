@@ -4,7 +4,6 @@ export const PHASES = {
   GOODBYE: { friendlyName: "goodbye", value: "GOODBYE" },
 };
 const PHASES_ARRAY = Object.values(PHASES);
-const phaseEl = document.querySelector(".phase");
 let phaseIndex = 0;
 
 export function getPhase() {
@@ -33,9 +32,7 @@ export function setLocalPhase(newPhaseIndex) {
     .forEach((el) => el.classList.remove("hidden"));
 
   // reset visualizer width (when it is hidden, it doesn't get width set properly)
-  window.onresize();
-
-  phaseEl.textContent = `${phaseIndex}/${PHASES_ARRAY.length - 1}`;
+  window.dispatchEvent(new Event("resize"));
 }
 
 export function nextPhase() {
@@ -56,7 +53,5 @@ export function nextPhase() {
     .forEach((el) => el.classList.remove("hidden"));
 
   // reset visualizer width (when it is hidden, it doesn't get width set properly)
-  window.onresize();
-
-  phaseEl.textContent = `${phaseIndex}/${PHASES_ARRAY.length - 1}`;
+  window.dispatchEvent(new Event("resize"));
 }
