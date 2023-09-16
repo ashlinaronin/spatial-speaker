@@ -34,7 +34,7 @@ const compressor = new Tone.Compressor({
   release: 1,
   threshold: -33,
 });
-const gain = new Tone.Gain(70);
+const gain = new Tone.Gain(140);
 const reverb = new Tone.Reverb(0.2);
 compressor.connect(gain);
 gain.connect(reverb);
@@ -69,15 +69,34 @@ const onServerPhaseChange = (newServerPhase) => {
 };
 
 const onStepsChange = (newServerSteps) => {
-  // figure out which teamId this client is
   const thisTeamId = getTeamId();
   // loop through all the sequencer steps and see if there are any players that need to be added or remoed
-  // eh, try destroying and re-creating and see if it's just as fast
-  sequencerSteps = newServerSteps.map(({ teamId, clients }) => {
-    // if this isn't our team, don't fill up steps
-    if (teamId !== thisTeamId) return { teamId, clientPlayers: [] };
+  newServerSteps.forEach(({ teamId, clients }, stepIndex) => {
+    // find players that shouldn't be here and dispose them
+    const seqStep = sequencerSteps[stepIndex];
 
-    const clientPlayers = clients.map(({ clientId }) => {
+    const badPlayers = seqStep.clientPlayers.filter(
+      (cp) => !clients.some((c) => c.clientId === cp.clientId)
+    );
+
+    badPlayers.forEach(({ clientId }) => {
+      const bpIndex = seqStep.clientPlayers.findIndex(
+        (cp) => cp.clientId === clientId
+      );
+      seqStep.clientPlayers[bpIndex].player.stop();
+      seqStep.clientPlayers[bpIndex].player.dispose();
+      seqStep.clientPlayers.splice(bpIndex, 1);
+      console.log("seq:removing player for ", clientId);
+      console.log("seq:now seqStep", seqStep);
+    });
+
+    // add players that aren't here yet
+    const newPlayers = clients.filter(
+      (c) =>
+        teamId === thisTeamId &&
+        !seqStep.clientPlayers.some((cp) => cp.clientId === c.clientId)
+    );
+    newPlayers.forEach(({ clientId }) => {
       const player = new Tone.GrainPlayer({
         url: `uploads/${clientId}_RECORD_NAME.ogg`,
         volume: 1,
@@ -88,10 +107,10 @@ const onStepsChange = (newServerSteps) => {
         reverse: phaseMapping.reverse,
       });
       player.connect(compressor);
-      return { clientId, player };
+      seqStep.clientPlayers.push({ clientId, player });
+      console.log("seq:adding player for ", clientId);
+      console.log("seq:now seqStep", seqStep);
     });
-
-    return { teamId, clientPlayers };
   });
 };
 
