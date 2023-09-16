@@ -7,17 +7,21 @@ import { initializeSensorApis } from "./sensors.js";
 // collect all the elements we'll need to refer to
 const recordButton = document.querySelector(".record");
 const clientIdEl = document.querySelector("#client-id");
+const teamIdEl = document.querySelector("#team-id");
 
 let recordings = [];
 let recording = false;
 const clientId = uuidv4();
+let teamId;
 
 const registerUser = async function () {
-  await fetch(`register`, {
+  const response = await fetch(`register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ clientId }),
   });
+  const registeredUser = await response.json();
+  teamId = registeredUser.teamId;
 };
 
 const sleep = async (ms) =>
@@ -27,6 +31,7 @@ const sleep = async (ms) =>
 
 const loadSequencer = async () => {
   clientIdEl.textContent = `clientId: ${clientId}`;
+  teamIdEl.textContent = `teamId: ${teamId}`;
   initializeSocket(clientId);
 
   await Tone.start();
@@ -78,15 +83,16 @@ const onGumSuccess = function (stream) {
     nextPhase();
 
     if (getPhase().value === PHASES.SEQUENCER.value) {
+      await registerUser();
+
+      // update URL so that if user refreshes it will have the necessary context
       if (history.pushState) {
         history.pushState(
           null,
           "",
-          `${window.location.origin}${window.location.pathname}sequencer.html?clientId=${clientId}`
+          `${window.location.origin}${window.location.pathname}sequencer.html?clientId=${clientId}&teamId=${teamId}`
         );
       }
-
-      await registerUser();
       await sleep(200);
       await uploadRecordings();
       await sleep(200);

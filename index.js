@@ -12,6 +12,7 @@ const registerMovementHandlers = require("./register-movement-handlers");
 const registerSyncHandlers = require("./register-sync-handlers");
 const serverPhaseNameMap = require("./serverPhaseNameMap");
 const { registerPhaseChangeListener, getPhase } = require("./phase");
+const getStepsFromClients = require("./getStepsFromClients");
 
 const startTime = process.hrtime();
 const getTimeFunction = () => {
@@ -22,14 +23,27 @@ const syncServer = new SyncServer(getTimeFunction);
 
 // track team ids we're assigning to make them sequential
 const NUMBER_OF_TEAMS = 4;
+const SEQUENCER_STEPS = 16;
+
 let currentTeamId = 0;
 
+let steps = [];
 const connectedClients = [];
 const addClientToList = async (clientId) => {
   // we don't know this user's teamId yet, so we have to fetch them from the db first
   const user = await getUser(clientId);
   const teamId = user.teamId;
-  connectedClients.push({ clientId, teamId });
+  connectedClients.push({
+    clientId,
+    teamId,
+    joinedTimestamp: getTimeFunction(),
+  });
+  steps = getStepsFromClients(
+    connectedClients,
+    SEQUENCER_STEPS,
+    NUMBER_OF_TEAMS
+  );
+  console.log("after client added, steps", steps);
 };
 const removeClientFromList = (clientId) => {
   const clientIndex = connectedClients.findIndex(
@@ -38,6 +52,12 @@ const removeClientFromList = (clientId) => {
   if (clientIndex > -1) {
     connectedClients.splice(clientIndex, 1);
   }
+  steps = getStepsFromClients(
+    connectedClients,
+    SEQUENCER_STEPS,
+    NUMBER_OF_TEAMS
+  );
+  console.log("after client left, steps", steps);
 };
 
 const init = async () => {
@@ -102,7 +122,7 @@ const init = async () => {
       console.log(`registering clientId ${clientId} with team ${teamId}`);
       registerUser(clientId, teamId);
 
-      return { success: true };
+      return { clientId, teamId };
     },
     options: {
       validate: {
@@ -148,10 +168,9 @@ const init = async () => {
     },
   });
 
-  const PHASE_BROADCAST_INTERVAL_MS = 6000;
+  const PHASE_STEP_BROADCAST_INTERVAL_MS = 6000;
 
   const LOOKAHEAD_SECONDS = 2.0;
-  const SEQUENCER_STEPS = 4;
   let bpm = 30;
   let current16thNote = 0;
   let futureTickTime = syncServer.getSyncTime();
@@ -172,8 +191,21 @@ const init = async () => {
   };
 
   const scheduleNote = (beatDivisionNumber, time) => {
-    console.log(`scheduling tick ${beatDivisionNumber} at`, time);
-    io.emit("tick", { beatDivisionNumber, serverTime: time });
+    const step = steps[beatDivisionNumber];
+
+    console.log(
+      `scheduling tick ${beatDivisionNumber} at ${time} with teamId ${
+        step?.teamId
+      } and clientIds ${step?.clients?.map(({ clientId }) => clientId)}`,
+      time
+    );
+
+    io.emit("tick", {
+      beatDivisionNumber,
+      serverTime: time,
+      teamId: step?.teamId,
+      clients: step?.clients,
+    });
   };
 
   const seqInterval = setInterval(() => {
@@ -184,11 +216,12 @@ const init = async () => {
     }
   }, 50);
 
-  const phaseInterval = setInterval(() => {
-    // send phase periodically so that any newly connected clients get lined up
+  const phaseAndStepInterval = setInterval(() => {
+    // send phase and step periodically so that any newly connected clients get lined up
     console.log("emitting phase", getPhase());
     io.emit("phase", { phaseId: getPhase() });
-  }, PHASE_BROADCAST_INTERVAL_MS);
+    io.emit("steps", steps);
+  }, PHASE_STEP_BROADCAST_INTERVAL_MS);
 
   io.on("connection", async (socket) => {
     const clientId = socket.handshake.query.clientId;
@@ -206,10 +239,12 @@ const init = async () => {
     registerMovementHandlers(io, socket, syncServer);
     await addClientToList(clientId);
     io.emit("connectedClients", connectedClients);
+    io.emit("steps", steps);
 
     socket.on("disconnect", () => {
       removeClientFromList(socket.handshake.query.clientId);
       io.emit("connectedClients", connectedClients);
+      io.emit("steps", steps);
     });
   });
 

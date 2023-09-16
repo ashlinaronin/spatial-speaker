@@ -39,14 +39,17 @@
     <script type="module">
       import { initializeSocket } from "./lib/sync-socket.js";
       import { initializeSensorApis } from "./lib/sensors.js";
-      import { getClientId } from "./lib/getClientId.js";
+      import { getClientId, getTeamId } from "./lib/getClientId.js";
       import { setupSequencer } from "./lib/sequencer.js";
 
       // collect all the elements we'll need to refer to
       const clientIdEl = document.querySelector("#client-id");
+      const teamIdEl = document.querySelector("#team-id");
 
       const clientId = getClientId();
+      const teamId = getTeamId();
       clientIdEl.textContent = `clientId: ${clientId}`;
+      teamIdEl.textContent = `teamId: ${teamId}`;
       initializeSocket(clientId);
 
       // when the start button is clicked, initialize all the sensors and start Tone

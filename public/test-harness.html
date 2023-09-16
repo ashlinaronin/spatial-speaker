@@ -9,52 +9,68 @@
       // don't try this at home, kids
       // start with hardcoded, then eventually pull from db via api
 
-      const ashlinmeClientIds = [
-        "3371cecd-bc29-4144-808d-6de246b7336b",
-        "83ddc287-c316-446b-ab65-b6941ede36d7",
-        "2b0c44d2-b585-48af-b9fc-effa341b0373",
-        "e781ea5f-765f-40b9-906c-6d77cd011199",
-        "4606438c-ccee-4d6c-9832-b54eb87dae0f",
-        "d0b50244-eb1e-4c6f-9d83-1e12c3c894a1",
-        "e72058ee-41f9-4f49-b2ec-ff3f55f3daf8",
-        "bee20c62-5448-4de5-9583-5b0f09b888d9",
-        "a5e0f43a-6ef7-48cb-998d-429631a48408",
-        "a62caa30-d0d6-48d1-ac4d-202165e7648c",
-        "508ce07c-70b5-400c-b331-ca01e5497012",
-        "e8f24dd6-a2bd-41e8-a62b-43e000dab9b8",
-        "8bfdcbab-ed32-4cca-baa2-0c504153d5b8",
-        "ae6f567e-0d1a-4710-ac3b-9a2e89fdef3f",
-        "19cd073d-ca85-4fe0-a9a0-0c34806be806",
-        "7d794e49-2754-46c0-afe0-2be1357d6c5a",
+      const ashlinmeTestClients = [
+        { clientId: "3371cecd-bc29-4144-808d-6de246b7336b", teamId: 0 },
+        { clientId: "83ddc287-c316-446b-ab65-b6941ede36d7", teamId: 1 },
+        { clientId: "2b0c44d2-b585-48af-b9fc-effa341b0373", teamId: 2 },
+        { clientId: "e781ea5f-765f-40b9-906c-6d77cd011199", teamId: 3 },
+        { clientId: "4606438c-ccee-4d6c-9832-b54eb87dae0f", teamId: 0 },
+        { clientId: "d0b50244-eb1e-4c6f-9d83-1e12c3c894a1", teamId: 1 },
+        { clientId: "e72058ee-41f9-4f49-b2ec-ff3f55f3daf8", teamId: 2 },
+        { clientId: "bee20c62-5448-4de5-9583-5b0f09b888d9", teamId: 3 },
+        { clientId: "a5e0f43a-6ef7-48cb-998d-429631a48408", teamId: 0 },
+        { clientId: "a62caa30-d0d6-48d1-ac4d-202165e7648c", teamId: 1 },
+        { clientId: "508ce07c-70b5-400c-b331-ca01e5497012", teamId: 2 },
+        { clientId: "e8f24dd6-a2bd-41e8-a62b-43e000dab9b8", teamId: 3 },
+        { clientId: "8bfdcbab-ed32-4cca-baa2-0c504153d5b8", teamId: 0 },
+        { clientId: "ae6f567e-0d1a-4710-ac3b-9a2e89fdef3f", teamId: 1 },
+        { clientId: "19cd073d-ca85-4fe0-a9a0-0c34806be806", teamId: 2 },
+        { clientId: "7d794e49-2754-46c0-afe0-2be1357d6c5a", teamId: 3 },
       ];
 
-      const localClientIds = [
-        "1457effa-d696-43bc-acc5-83a042b42018",
-        "638d5dc7-5fda-469f-9d69-69db3f9f8ddb",
-        "46d60bfd-33b2-4ba2-a317-b65c4b59542e",
-        "7e95aa39-73b0-4970-8823-ff397acc3598",
-        "188a78e9-d99d-4938-981a-1c9f8f212697",
-        "b3ab5768-2abb-4b1a-a416-50bf0548d768",
-        "52217880-ff94-4eb2-8c7f-f31d5e641d2d",
-        "1ee7392a-ab84-4ec5-9e01-278afdc79d32",
-        "9497eb74-fb1d-4253-9afc-6b77f55e0909",
-        "ac36a9d2-497b-4337-b553-fbd5a6831298",
-        "6b8de4c1-1343-4aae-82cd-3d347f3666cd",
-        "1d7fbcd1-b4ca-4047-a2f8-4e4f6b22aba4",
-        "ad39b0e9-b226-4bb4-964b-88ea4718bec6",
-        "05a393a1-1e8c-4b82-9b98-f6f6637085e1",
-        "6e85509a-74b6-4077-9eb6-34c50855112f",
-        "f265a2fc-5be9-4f13-8871-694cc57e205c",
+      const localTestClients = [
+        { clientId: "70b130a7-ed5e-4832-b31e-d7d4bbb4258e", teamId: 0 },
+        { clientId: "39674357-ee42-418e-b9f5-56d18c1e0a61", teamId: 1 },
+        { clientId: "9a3a9e37-4400-4078-adc3-c5e6498f1914", teamId: 2 },
+        { clientId: "876af287-4882-43c4-b2c9-074cb4a14a0f", teamId: 3 },
+        { clientId: "e11eab1b-de9f-46b1-a335-4f07ee2c0aca", teamId: 0 },
+        { clientId: "fa2877a2-ee38-4742-98ef-11e3b56d2fc4", teamId: 1 },
+        { clientId: "005f7d9d-9012-4964-b1ef-c4858254528f", teamId: 2 },
+        { clientId: "da644cc6-325d-4ed6-ac03-3ef2cfc0412c", teamId: 3 },
+        { clientId: "9bef22fb-8d26-4bc7-8d94-283e3064fca0", teamId: 0 },
+        { clientId: "f18ab305-0fe5-4d59-bfbb-a7da269dcd94", teamId: 1 },
+        { clientId: "0af9e38c-0938-4c09-b3cb-018360e6dcb9", teamId: 2 },
+        { clientId: "0adda464-1c3f-4f04-8252-04ebb682d097", teamId: 3 },
+        { clientId: "0036542a-b0c2-4b76-b53b-31a3e88a18b0", teamId: 0 },
+        { clientId: "1c8106c1-bf7a-49d2-af68-94ce87c88d39", teamId: 1 },
+        { clientId: "00794b4f-b481-47f2-ae6e-e480bf777284", teamId: 2 },
+        { clientId: "407c8884-9b39-40cf-bb81-bf49207e0b74", teamId: 3 },
+        // { clientId: "fdfb57df-1493-4d27-8c7f-ec1bc76abf08", teamId: 0 },
+        // { clientId: "5d9068e0-dcf3-4f46-80c1-1e9f33ea0b1a", teamId: 1 },
+        // { clientId: "abe62ba0-e63a-405c-8135-117c5f6c3434", teamId: 2 },
+        // { clientId: "7d65b22f-dff9-4eb0-96a2-22c17c991295", teamId: 3 },
+        // { clientId: "2f43f7a4-9c43-4188-91ae-5edbb84d060d", teamId: 0 },
+        // { clientId: "f22c483a-cd36-47fa-b06d-585ffbc8ce7e", teamId: 1 },
+        // { clientId: "f1e84881-17a4-4a8c-943a-65c1d34d569a", teamId: 2 },
+        // { clientId: "4d8d676d-e0f1-4403-a35f-a0ce66f51b07", teamId: 3 },
+        // { clientId: "0e0ec447-722e-428b-a0bd-aa1ea7dfa26a", teamId: 0 },
+        // { clientId: "6ef16e93-e4b9-495a-bb25-e5fd5502b1bb", teamId: 1 },
+        // { clientId: "a57d45cb-714d-4e96-b727-45d5a33fbd7f", teamId: 2 },
+        // { clientId: "5e0d7436-ef10-4dc2-b334-bd9e3f03e372", teamId: 3 },
+        // { clientId: "2ab477b1-0fe4-4eb4-9eb5-d14d88573df7", teamId: 0 },
+        // { clientId: "a4887960-c12f-4543-b585-8770737a7870", teamId: 1 },
+        // { clientId: "53a968e6-8687-4f92-9116-dfef9d787ef8", teamId: 2 },
+        // { clientId: "4f29eb4a-6d02-479b-a08a-cfb4bc676133", teamId: 3 },
       ];
 
-      const clientIds =
+      const testClients =
         window.location.host === "ashlin.me"
-          ? ashlinmeClientIds
-          : localClientIds;
+          ? ashlinmeTestClients
+          : localTestClients;
 
-      const createIframe = (clientId) => {
+      const createIframe = ({ clientId, teamId }) => {
         const iframe = document.createElement("iframe");
-        iframe.src = `sequencer.html?clientId=${clientId}`;
+        iframe.src = `sequencer.html?clientId=${clientId}&teamId=${teamId}`;
 
         // browser doesn't read this as a real user action, so it doesn't work to start tone :()
         // iframe.onload = () => {
@@ -65,8 +81,8 @@
         document.body.appendChild(iframe);
       };
 
-      clientIds.forEach((clientId) => {
-        createIframe(clientId);
+      testClients.forEach(({ clientId, teamId }) => {
+        createIframe({ clientId, teamId });
       });
     </script>
     <iframe
