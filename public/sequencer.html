@@ -56,6 +56,8 @@
       document.querySelector("#start").addEventListener(
         "click",
         async () => {
+          document.querySelector("#start").classList.add("hidden");
+
           await initializeSensorApis(clientId);
           await Tone.start();
 
