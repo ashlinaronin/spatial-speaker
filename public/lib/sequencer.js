@@ -184,7 +184,7 @@ export const setupSequencer = async () => {
 
   await reverb.ready;
 
-  socket.on("tick", ({ beatDivisionNumber, serverTime, teamId, clients }) => {
+  socket.on("tick", ({ beatDivisionNumber, serverTime, teamId }) => {
     // if this phase doesn't involve playing sound, bail
     if (!phaseMapping.play) return;
 
@@ -199,32 +199,14 @@ export const setupSequencer = async () => {
     step.clientPlayers.forEach(({ clientId, player }) => {
       if (!player.loaded) return;
 
-      // play sample
       console.log(
-        `${getClientId()}: scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${duration}, sample from clientId ${clientId}`
+        `${getClientId()}: team ${teamId} scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${duration}, sample from clientId ${clientId}`
       );
       timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`;
 
+      // play sample
       player.start(timeToPlay, SAMPLE_OFFSET, duration);
     });
-
-    // if (!!step.player) {
-    //   // early return if not loaded yet
-    //   if (!step.player.loaded) return;
-
-    //   // play sample
-    //   console.log(
-    //     `${getClientId()}: scheduling ${beatDivisionNumber} at ${timeToPlay} based on serverTime ${serverTime}, duration = ${duration}`
-    //   );
-    //   timeEl.innerText = `${beatDivisionNumber}:: ${timeToPlay}:: ${serverTime}:: ${duration}`;
-
-    //   step.player.start(timeToPlay, SAMPLE_OFFSET);
-    //   // step.player.stop(timeToPlay + duration);
-    // } else {
-    //   // play metronome on non-occupied beats, for debugging. disabled for now
-    //   //   if (!metronome.loaded) return;
-    //   //   metronome.start(timeToPlay, null, "16n");
-    // }
   });
 
   Tone.Transport.start();
