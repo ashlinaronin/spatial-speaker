@@ -34,8 +34,8 @@ const compressor = new Tone.Compressor({
   release: 1,
   threshold: -33,
 });
-const gain = new Tone.Gain(140);
-const reverb = new Tone.Reverb(0.6);
+const gain = new Tone.Gain(180);
+const reverb = new Tone.Reverb(0.2);
 const chorus = new Tone.Chorus(4, 2.5, 0.5);
 const delay = new Tone.FeedbackDelay("8n", 0.5);
 compressor.connect(gain);
@@ -143,20 +143,12 @@ const sensorReadInterval = setInterval(() => {
     100
   );
 
-  const newOverlap = scale(
-    Math.abs(latestMovement.motionZ),
-    ACCEL_LOW_INPUT,
-    ACCEL_HI_INPUT,
-    1,
-    3
-  );
-
   const newVerb = scale(
     Math.abs(latestMovement.motionX),
     ACCEL_LOW_INPUT,
     ACCEL_HI_INPUT,
-    0.0,
-    3.0
+    0.1,
+    1.0
   );
 
   const newDelay = scale(
@@ -169,12 +161,11 @@ const sensorReadInterval = setInterval(() => {
 
   delay.delayTime.rampTo(newDelay, 0.05);
 
-  // reverb.decay = newVerb;
+  reverb.decay = newVerb;
 
   sequencerSteps.forEach(({ clientPlayers }) => {
     clientPlayers.forEach(({ player }) => {
       player.detune = newDetune;
-      player.overlap = newOverlap;
     });
   });
 }, SENSOR_READ_MS);
