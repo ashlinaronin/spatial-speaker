@@ -37,8 +37,6 @@ export function visualize(stream) {
   function draw() {
     if (shouldStop) return;
 
-    console.log("drawing");
-
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
