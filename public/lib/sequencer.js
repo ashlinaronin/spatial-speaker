@@ -35,10 +35,14 @@ const compressor = new Tone.Compressor({
   threshold: -33,
 });
 const gain = new Tone.Gain(140);
-const reverb = new Tone.Reverb(0.2);
+const reverb = new Tone.Reverb(0.6);
+const chorus = new Tone.Chorus(4, 2.5, 0.5);
+const delay = new Tone.FeedbackDelay("8n", 0.5);
 compressor.connect(gain);
-gain.connect(reverb);
-reverb.toDestination();
+gain.connect(chorus);
+chorus.connect(reverb);
+reverb.connect(delay);
+delay.toDestination();
 
 let phaseMapping = serverPhaseArray.find((p) => p.index === serverPhase);
 const onServerPhaseChange = (newServerPhase) => {
@@ -116,12 +120,6 @@ const onStepsChange = (newServerSteps) => {
 
 const ACCEL_LOW_INPUT = 0;
 const ACCEL_HI_INPUT = 10;
-const DETUNE_LOW = -100;
-const DETUNE_HI = 100;
-const DURATION_LOW = 100;
-const DURATION_HI = 2000;
-const OVERLAP_LOW = 1;
-const OVERLAP_HI = 3;
 const SENSOR_READ_MS = 200;
 
 let duration = phaseMapping.duration;
@@ -141,29 +139,37 @@ const sensorReadInterval = setInterval(() => {
     Math.abs(latestMovement.motionY),
     ACCEL_LOW_INPUT,
     ACCEL_HI_INPUT,
-    DETUNE_LOW,
-    DETUNE_HI
+    -100,
+    100
   );
 
   const newOverlap = scale(
     Math.abs(latestMovement.motionZ),
     ACCEL_LOW_INPUT,
     ACCEL_HI_INPUT,
-    OVERLAP_LOW,
-    OVERLAP_HI
+    1,
+    3
   );
 
-  const newDuration = scale(
+  const newVerb = scale(
     Math.abs(latestMovement.motionX),
     ACCEL_LOW_INPUT,
     ACCEL_HI_INPUT,
-    DURATION_LOW,
-    DURATION_HI
+    0.0,
+    3.0
   );
 
-  // duration = newDuration; // beware that this overrides the phase specific duration...
-  // also was trying to add strings together!!
-  // so maybe we should only apply it in phases 0,1? trying all for now
+  const newDelay = scale(
+    Math.abs(latestMovement.motionX),
+    ACCEL_LOW_INPUT,
+    ACCEL_HI_INPUT,
+    0.0,
+    1.2
+  );
+
+  delay.delayTime.rampTo(newDelay, 0.05);
+
+  // reverb.decay = newVerb;
 
   sequencerSteps.forEach(({ clientPlayers }) => {
     clientPlayers.forEach(({ player }) => {
