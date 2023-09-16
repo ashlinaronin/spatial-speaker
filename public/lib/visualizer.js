@@ -9,7 +9,11 @@ window.onresize = function () {
 
 window.onresize();
 
+let shouldStop = false;
+
 export function visualize(stream) {
+  shouldStop = false;
+
   if (!audioCtx) {
     audioCtx = new AudioContext();
   }
@@ -31,6 +35,10 @@ export function visualize(stream) {
   draw();
 
   function draw() {
+    if (shouldStop) return;
+
+    console.log("drawing");
+
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
@@ -64,4 +72,8 @@ export function visualize(stream) {
     canvasCtx.lineTo(canvas.width, canvas.height / 2);
     canvasCtx.stroke();
   }
+}
+
+export function stopVisualizing() {
+  shouldStop = true;
 }

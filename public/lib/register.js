@@ -1,4 +1,4 @@
-import { visualize } from "./visualizer.js";
+import { visualize, stopVisualizing } from "./visualizer.js";
 import { PHASES, getPhase, nextPhase } from "./phases.js";
 import { setupSequencer } from "./sequencer.js";
 import { initializeSocket } from "./sync-socket.js";
@@ -110,6 +110,7 @@ const onGumSuccess = function (stream) {
       recordButton.style.color = "";
       recordButton.textContent = "record";
       await initializeSensorApis(clientId);
+      stopVisualizing();
     } else {
       recording = true;
       mediaRecorder.start();
